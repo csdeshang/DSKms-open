@@ -1,6 +1,3 @@
 /.idea
 /.vscode
-/vendor
 *.log
-.env
-/nbproject/private/
