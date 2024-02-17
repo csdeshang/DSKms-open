@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>{$html_title|default=$Think.config.ds_config.site_name}</title>
+        <meta name="renderer" content="webkit|ie-comp|ie-stand" />
+        <meta name="keywords" content="{$seo_keywords|default=''}" />
+        <meta name="description" content="{$seo_description|default=''}" />
+        <link rel="stylesheet" href="{$Think.HOME_SITE_ROOT}/css/common.css">
+        <script src="{$Think.PLUGINS_SITE_ROOT}/jquery-2.1.4.min.js"></script>
+        <script src="{$Think.PLUGINS_SITE_ROOT}/common.js"></script>
+        <script>
+            var HOMESITEURL = "{$Think.HOME_SITE_URL}";
+        </script>
+        <!--{if $goodscourses.video_type=='tencent' && $goodscourses.file_id && $Think.config.ds_config.vod_tencent_play_domain && $Think.config.ds_config.vod_tencent_appid}-->
+        <link href="https://imgcache.qq.com/open/qcloud/video/tcplayer/tcplayer.css" rel="stylesheet">
+        <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 HLS 格式的视频，需要在 tcplayer.v4.1.min.js 之前引入 hls.min.0.13.2m.js。-->
+        <script src="https://imgcache.qq.com/open/qcloud/video/tcplayer/libs/hls.min.0.13.2m.js"></script>
+        <!--播放器脚本文件-->
+        <script src="https://imgcache.qq.com/open/qcloud/video/tcplayer/tcplayer.v4.1.min.js"></script>
+        <!--{/if}-->
+        <!--{if $goodscourses.video_type=='aliyun' && $goodscourses.file_id}-->
+        <link href="https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css" rel="stylesheet">
+        <script src="https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js"></script>
+        <!--{/if}-->
+        <script src="{$Think.PLUGINS_SITE_ROOT}/layer/layer.js"></script>
+        <link rel="stylesheet" href="{$Think.BASE_SITE_ROOT}/static/home/default/store/styles/{$store_theme}/css/goods.css">
+    </head>
+    <body>
+        <div class="course-header">
+            <ul>
+                <li class="nv-goback fl"><a href="javascript:history.go(-1)"><i class="iconfont">&#xe619;</i></a></li>
+                <li class="nv-menu fl">{$goodscourses.goodscourses_name}</li>
+                <li class="nv-follow fl"><i></i><span onclick="collect_goods('{$goods_id}','count','goods_collect');">收藏</span></li>
+            </ul>
+        </div>
+
+        <div class="course-main">
+            <div class="video-con">
+                <div class="course-layout">
+                    <div class="section-list" dstype='chapter'>
+                        <div class="chapter-list">
+                            <ul>
+                                {foreach name="goodscourses_group" item="goodscourses_list"}
+                                {php}$fe_goodscourses=1;{/php}
+                                 <li style="padding:0">
+                                    <a class="clearfix">{$goodscourses_list.goodscourses_class_name}</a>                        
+                                </li>
+                                {foreach name="goodscourses_list.list" item="courses"}
+                                <li>
+                                    <a class="clearfix{if $Request.param.goodscourses_id == $courses.goodscourses_id} current{/if}" href="{$courses.goodscourses_view|default='javascript:void(0)'}"><em class="iconfont">&#xe635;</em>{php}echo sprintf("%02d", $fe_goodscourses);{/php} {$courses.goodscourses_name}<em class="iconfont">&#xe635;</em></a>                        
+                                </li>
+                                {php}$fe_goodscourses++;{/php}
+                                {/foreach}
+                                {/foreach}
+                            </ul>
+                        </div>
+                    </div>
+                    <!--{if !empty($goodscourses.baidu_pan_fsids)}-->
+                    <div class="section-list" dstype='courseware'>
+                        <div class="chapter-list">
+                            <ul>
+                                {foreach name="goodscourses.baidu_pan_fsids" item="file_name" key="file_id"}
+                                <li>
+                                    <a class="clearfix" href="javascript:downloadFile('{$file_id}','{$file_name}')">{$file_name}<em class="iconfont">&#xe635;</em></a>                        
+                                </li>
+                                {/foreach}
+                            </ul>
+                        </div>
+                    </div>
+                    <!--{/if}-->
+                    <div class="course-sidebar-layout">
+                        <dl>
+                            <dd class="openchapter">
+                                <i class="iconfont">&#xe635;</i>
+                                <span>章节</span>
+                            </dd>
+                            <!--{if !empty($goodscourses.baidu_pan_fsids)}-->
+                            <dd class="opencourseware">
+                                <i class="iconfont">&#xe635;</i>
+                                <span>课件</span>
+                            </dd>
+                            <!--{/if}-->
+                            <a href="{:url('Index/index')}" target="_blank">
+                                <dd class="openpanel">
+                                    <i class="iconfont">&#xe702;</i>
+                                    <span>首页</span>
+                                </dd>
+                            </a>
+                            <a href="{:url('Store/index',['store_id'=>$goods.store_id])}" target="_blank">
+                                <dd class="openpanel">
+                                    <i class="iconfont">&#xe6f5;</i>
+                                    <span>机构</span>
+                                </dd>
+                            </a>
+                        </dl>
+                    </div>
+
+                    <div class="course-center-layout">
+                        <!--{if $goodscourses.video_type=='aliyun' && $goodscourses.file_id}-->
+                        <div class="prism-player" id="player-con" style="width:100%;height:100%;"></div>
+                        <!--{else}-->
+                        <video {if !$goodscourses.file_id}src="{$goodscourses.goodscourses_url|raw}"{/if} controls="true" controlslist="nodownload" style="width:100%;height:100%;" id="video" >
+                            your browser does not support the video tag
+                        </video>
+                        <!--{/if}-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        $(function () {
+            
+                /*{if $goodscourses.video_type=='tencent' && $goodscourses.file_id && $Think.config.ds_config.vod_tencent_play_domain && $Think.config.ds_config.vod_tencent_appid}*/
+                var player = TCPlayer('video', {
+                    fileID: '{$goodscourses.file_id}', // 请传入需要播放的视频 filID（必须）
+                    appID: '{$Think.config.ds_config.vod_tencent_appid}', // 请传入点播账号的 appID（必须）
+                    flash:{
+                        swf: '//{$Think.config.ds_config.vod_tencent_play_domain}/vod-player/{$Think.config.ds_config.vod_tencent_appid}/{$goodscourses.file_id}/tcplayer/player.swf' //swf 文件地址（必须）
+                    },
+                    plugins:{
+                    ContinuePlay: { // 开启续播功能
+                      auto: true, //[可选] 是否在视频播放后自动续播
+                    },
+                    },
+                    psign:'{$goodscourses.psign}'
+                  });
+                //播放结束事件
+                /*{if session('member_id')}*/
+                player.on('ended', function() {
+                    $.getJSON("{:url('MemberGoodscourses/finish',['goodscourses_id'=>$goodscourses.goodscourses_id])}")
+                 });
+                /*{/if}*/
+                /*{/if}*/
+                /*{if $goodscourses.video_type=='aliyun' && $goodscourses.file_id}*/
+                var player = new Aliplayer({
+                  "id": "player-con",
+                  "vid": "{$goodscourses.file_id}",
+                  "playauth": "{$goodscourses.psign}",
+                  "qualitySort": "asc",
+                  "format": "mp4",
+                  "mediaType": "video",
+                  "encryptType": 1,
+                  "width": "100%",
+                  "height": "500px",
+                  "autoplay": true,
+                  "isLive": false,
+                  "rePlay": false,
+                  "playsinline": true,
+                  "preload": true,
+                  "controlBarVisibility": "hover",
+                  "useH5Prism": true
+                }, function (player) {
+                    console.log("The player is created");
+                  }
+                );
+                //播放结束事件
+                /*{if session('member_id')}*/
+                player.on('ended', function() {
+                    $.getJSON("{:url('MemberGoodscourses/finish',['goodscourses_id'=>$goodscourses.goodscourses_id])}")
+                 });
+                /*{/if}*/ 
+                /*{/if}*/
+            $(".course-sidebar-layout .openchapter").click(function () {
+                if($(this).hasClass("current")){
+                    $(".section-list[dstype=chapter]").addClass("active");
+                    $(".section-list[dstype=courseware]").removeClass("active");
+                    $(this).removeClass("current");
+                }else{
+                    $(".section-list[dstype=chapter]").removeClass("active");
+                    $(this).addClass("current");
+                }
+            });
+            $(".course-sidebar-layout .opencourseware").click(function () {
+                if($(this).hasClass("current")){
+                    $(".section-list[dstype=courseware]").addClass("active");
+                    $(".section-list[dstype=chapter]").removeClass("active");
+                    $(this).removeClass("current");
+                }else{
+                    $(".section-list[dstype=courseware]").removeClass("active");
+                    $(this).addClass("current");
+                }
+            });
+            $('#video').bind('contextmenu',function() { return false; });
+            $(".chapter-list a").click(function(){
+                var href = $(this).attr('href');
+                if(href == "javascript:void(0)"){
+                    alert("您需要先购买课程才能观看本章节")
+                }
+            })
+        });
+        function downloadFile(file_id,file_name){
+            /*{if(!$canDownload)}*/
+            alert("您需要先购买课程才能下载课件");
+            return;
+            /*{else}*/
+            window.open('{:url("Goods/download")}?goodscourses_id={$goodscourses.goodscourses_id}&goods_id={$goodscourses.goods_id}&file_id='+file_id+'&file_name='+file_name)
+            /*{/if}*/
+            
+        }
+    </script>
+    {include file='default/base/mall_footer'/}
+</html>

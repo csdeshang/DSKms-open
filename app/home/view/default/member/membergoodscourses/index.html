@@ -1,0 +1,108 @@
+{extend name="default/base/base_member" /}
+
+
+{block name="member_main"}
+  <div class="js-course-list my-space-course study-tl"> 
+   <!--{notempty name="goodscourses_view_group"}-->   
+   <!--{foreach name='goodscourses_view_group' item='goodscourses_view_list'}-->   
+   <div class="tl-item  tl-item-first"> 
+    <span class="time"></span> 
+    <div class="course-list course-list-m"> 
+     <span class="time-title">{$goodscourses_view_list.year} <em>{$goodscourses_view_list.date}</em></span> 
+     <ul> 
+      <!--{foreach name='goodscourses_view_list.list' item='item'}-->   
+      <li class="course-one"> 
+       <div class="course-list-img l"> 
+           <a href="{:url('Goods/courses',['goodscourses_id'=>$item['goodscourses_id'],'goods_id'=>$item['goods_id']])}" target="_blank"> <img src="{$item.goods_image_url}" /> </a> 
+       </div> 
+       <div class="course-list-cont"> 
+        <h3 class="study-hd"> <a href="{:url('Goods/courses',['goodscourses_id'=>$item['goodscourses_id'],'goods_id'=>$item['goods_id']])}" target="_blank">{$item.goods_name}</a> 
+         <!-- 更新完毕 --> 
+         <div class="share-box"> 
+          <div class="show-btn">
+           <i class="iconfont">&#xe73a;</i>
+          </div> 
+          <div class="share-box-con courses-r"> 
+           <div class="justspace"> 
+            <a href="javascript:;" ds_type='delbtn' data-param='{"goods_id":"{$item.goods_id}"}' title="删除" class="del"><i class="iconfont">&#xe6e6;</i></a> 
+           </div> 
+          </div> 
+         </div> </h3> 
+        <div class="study-points"> 
+         <span class="i-left span-common">已学{$item.finish_percent}%</span> 
+         <span class="i-right span-common">学习至{$item.goodscourses_name}</span> 
+        </div> 
+        <div class="catog-points"> 
+         <a href="{:url('Goods/courses',['goodscourses_id'=>$item['goodscourses_id'],'goods_id'=>$item['goods_id']])}" target="_blank" class="btn-red continute-btn">继续学习</a> 
+        </div> 
+       </div> </li> 
+       <!--{/foreach}-->
+     </ul> 
+    </div> 
+   </div> 
+   <!--{/foreach}-->
+   <div class="pagination">{$show_page|raw}</div>
+    <!--{else /}-->
+    <div class="no_results">{$Think.lang.no_record}</div>
+    <!--{/notempty}-->
+  </div>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        //清除单条浏览记录
+        $("[ds_type='delbtn']").on('click',function(){
+            var _this=$(this);
+            layer.confirm("{$Think.lang.ds_ensure_del}", {
+                btn: ['确定', '取消'],
+                title: false,
+            }, function () {
+                    var data_str = _this.attr('data-param');
+                    eval( "data_str = "+data_str);
+                    $.getJSON(HOMESITEURL+'/MemberGoodscourses/del.html?goods_id='+data_str.goods_id,function(data){
+                        if(data.code == 10000){
+                            location.reload(true);
+                        }else{
+                            layer.alert(data.message);
+                        }
+                    });
+            });
+        });
+
+    });
+</script>
+
+<style>
+.study-tl .tl-item {position: relative;padding-left: 24px;border-left: 1px solid #d9dde1;}
+.tl-item {margin-top: 8px;}
+.study-tl .tl-item-first:before {content: '';position: absolute;width: 1px;height: 20px;left: -1px;top: 0;background-color: #fff;}
+.tl-item-first:before {background: 0 0;}
+.study-tl .time {position: absolute;left: 0;top: 0;margin-left: -4px;width: 8px;height: 8px;border-radius: 50%;background-color: #d8d8d8;}
+.course-list .time-title {position: relative;top: -8px;color: #8a8c8f;font-size: 16px;}
+.course-list .time-title em {font-size: 12px;display: inline-block;margin-left: 8px;}
+.course-list .course-one {position: relative;padding: 0;border-bottom: 0;display: flex;flex-direction: row;align-items: center;}
+.course-list .course-list-img img {vertical-align: top;width:200px;}
+.course-list-cont {padding-left: 0;margin-left: 32px;padding-top: 24px;padding-bottom: 28px;border-bottom: 1px solid #d9dde1;width: 100%;box-sizing: border-box;}
+.course-list .study-hd {color: #12171b;position: relative;}
+.study-hd {font-size: 20px;line-height: 36px;height: 36px;display: flex;flex-direction: row;align-items: center;}
+.share-box {position: absolute;right: 10px;top: 27px;width: 30px;background-color: #ff0;overflow: visible;}
+.study-hd .share-box {top: 0;right: 0;}
+.share-box .show-btn {position: absolute;top: 8px;right: 0;width: 30px;height: 20px;font-size: 18px;text-align: center;line-height: 20px;color: #bdc0c3;cursor: pointer;}
+.study-hd .share-box:hover .share-box-con{display: block}
+.share-box .share-box-con {display: none;position: absolute;z-index: 99;top: 28px;right: 0;font-size: 20px;background-color: #fff;padding: 0 8px;box-shadow: 4px 4px 10px 2px #e1e1e1;}
+.course-list .study-hd a {font-weight: 700;}
+.course-list .study-hd a i{margin-right:0}
+.study-hd a {max-width: 660px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;color:#1c1f21}
+
+.study-points {padding: 0;height: 24px;line-height: 24px;font-size: 14px;color: #4d555d;display: flex;flex-direction: row;align-items: center;}
+.course-list .span-common {font-size: 14px;color: #787d82;}
+.course-list .study-points span {margin-right: 14px;}
+.course-list .study-points .i-left {color: #f01400;}
+.study-points .i-right {max-width: 600px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+.course-list .catog-points {position: relative;padding-bottom: 10px;word-wrap: break-word;}
+.catog-points {margin-top: 12px;padding-bottom: 0;display: flex;flex-direction: row;align-items: center;}
+.course-list .catog-points .continute-btn {font-size: 14px;border: none;color: #fff;width: 104px;height: 36px;line-height: 36px;text-align: center;background: rgba(240,20,20,.6);border-radius: 18px;}
+.catog-points .continute-btn {position: static;margin-right: 32px;}
+</style>
+
+
+{/block}

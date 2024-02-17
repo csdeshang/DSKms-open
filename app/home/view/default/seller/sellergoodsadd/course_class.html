@@ -1,0 +1,99 @@
+<div class="eject_con" style="max-height: 400px;overflow: auto">
+    <div id="warning" class="alert alert-error"></div>
+    <table class="dssc-default-table">
+        <tbody id='sort_table'>
+            <tr class="bd-line">
+                <td>
+                    <input type="text" class="text w300" id="temp_name" />
+                </td>
+                <td class="dscs-table-handle">
+                    <a class="dssc-btn mr10" onclick="add_class()">新增</a>
+                    <a class="dssc-btn" onclick="sort_class()" id='sort_btn'>排序</a>
+                </td>
+            </tr>
+            {foreach name='goodscourses_class_list' item='goodscourses_class'}
+            <tr class="bd-line bd-line-sort" id='goodscourses_class_{$goodscourses_class.goodscourses_class_id}'>
+                <td>
+                    {$goodscourses_class.goodscourses_class_name}
+                </td>
+                <td class="dscs-table-handle sort_0">
+                    <a class="dssc-btn mr10" onclick='use_class({$goodscourses_class.goodscourses_class_id},"{$goodscourses_class.goodscourses_class_name}")'>使用</a>
+                    <a class="dssc-btn dssc-btn-red" onclick='del_class({$goodscourses_class.goodscourses_class_id})'>删除</a>
+                </td>
+                <td class="dscs-table-handle sort_1" style='display: none'>
+                    <input type="text" class="text goodscourses_class_sort w100" name="sort[{$goodscourses_class.goodscourses_class_id}]" data='{$goodscourses_class.goodscourses_class_id}' value='{$goodscourses_class.goodscourses_class_sort}' />
+                </td>
+            </tr>
+            {/foreach}
+        </tbody>
+    </table>
+</div>
+<script>
+    $(function(){
+        
+    });
+    function add_class(){
+        var goodscourses_class_name=$('#temp_name').val()
+        $.post(" {:url('Sellergoodsonline/course_class_add')}", {
+                    goods_id: '{$Request.param.goods_id}',
+                    goodscourses_class_name: goodscourses_class_name
+                }, function (data) {
+                    if (data.code==10000) {
+                        selectCourseClass(data.result.goodscourses_class_id,goodscourses_class_name)
+                        $('.dialog_close_button').click()
+                    } else {
+                        layer.msg(data.message);
+                    }
+                }, 'json');
+    }
+    function del_class(goodscourses_class_id){
+        $.post(" {:url('Sellergoodsonline/course_class_del')}", {
+                    goodscourses_class_id: goodscourses_class_id,
+                }, function (data) {
+                    if (data.code==10000) {
+                        $('#goodscourses_class_'+goodscourses_class_id).remove()
+                    } else {
+                        layer.msg(data.message);
+                    }
+                }, 'json');
+    }
+    function use_class(goodscourses_class_id,goodscourses_class_name){
+        selectCourseClass(goodscourses_class_id,goodscourses_class_name)
+        $('.dialog_close_button').click()
+    }
+    function sort_class(){
+        if($('#sort_btn').text()=='排序'){
+            $('#sort_btn').text('保存')
+            $('.sort_1').show()
+            $('.sort_0').hide()
+            $('#sort_btn').addClass('dssc-btn-red')
+        }else{
+            $('#sort_btn').text('排序')
+            $('.sort_1').hide()
+            $('.sort_0').show()
+            $('#sort_btn').removeClass('dssc-btn-red')
+            var sortItem=[]
+            $('.bd-line-sort').each(function(){
+                sortItem.push({
+                    goodscourses_class_id:$(this).find('.goodscourses_class_sort').eq(0).attr('data'),
+                    goodscourses_class_sort:$(this).find('.goodscourses_class_sort').eq(0).val()
+                })
+            })
+            $.post(" {:url('Sellergoodsonline/course_class_sort')}", {
+                    goodscourses_class_list: sortItem,
+                }, function (data) {
+                    if (data.code==10000) {
+                        var arrDOM = $('.bd-line-sort')
+                        arrDOM.sort(function (a, b) { 
+                            return parseInt($(a).find('.goodscourses_class_sort').eq(0).val()) - parseInt($(b).find('.goodscourses_class_sort').eq(0).val()) 
+                        });
+                        for (i in arrDOM) $('#sort_table').append(arrDOM.eq(i));
+                    } else {
+                        layer.msg(data.message);
+                    }
+                }, 'json');
+
+
+        }
+    }
+</script>

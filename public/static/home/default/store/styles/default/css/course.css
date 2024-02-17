@@ -1,0 +1,103 @@
+.course-infos-top{position:relative;width:100%;background-position:center;background-size:cover;background-repeat:no-repeat}
+.course-infos-top .info-wrap{position:relative;margin:0 auto;padding-top:72px;padding-bottom:136px;width:72pc}
+.course-infos-top .info-wrap .extra{position:absolute;top:9pt;right:0;color:#fff;}
+.course-infos-top .info-wrap .extra .course-collect{margin-right:16px;cursor:pointer;float:left;}
+.course-infos-top .info-wrap .extra .course-collect i{width:18px;display:block;line-height:32px;float:left;text-align:center;}
+.course-infos-top .info-wrap .extra .course-collect span{margin-left:4px;font-size:12px;line-height:32px;}
+.course-infos-top .info-wrap .extra .share-action{padding-left:14px;cursor:pointer;float:left;}
+.course-infos-top .info-wrap .extra .share-action .share-money{display:inline-block;padding:0 9pt;border-radius:1pc 1pc 1pc 0;background-color:#f76b1c;background-image:linear-gradient(270deg,#c11782 0,#f76b1c 100%);color:#fff;text-align:center;letter-spacing:0;font-size:9pt;line-height:2pc}
+.course-infos-top .info-wrap .extra .inform{float:left;color:#fff;}
+.course-infos-top .info-wrap .extra .inform i{width:18px;display:block;line-height:32px;float:left;text-align:center;}
+.course-infos-top .info-wrap .extra .inform span{margin-left:4px;font-size:12px;line-height:32px;}
+.course-infos-top .info-wrap .title-box{margin:0 auto;width:750pt}
+.course-infos-top .info-wrap .title-box h1{color:#fff;text-align:center;text-shadow:0 2px 4px rgba(28,31,33,.6);font-size:40px;line-height:3pc}
+.course-infos-top .info-wrap .title-box h2{margin-top:8px;color:#fff;text-align:center;text-shadow:0 2px 4px rgba(28,31,33,.6);font-size:1pc;line-height:24px}
+.course-infos-top .fixed-wrap{position:absolute;bottom:-4pc;left:50%;overflow:hidden;margin-left:-6in;width:72pc;min-height:8pc;border-radius:18px;background-image:url(../images/fixed_bg.png);background-position:center;background-size:cover;background-repeat:no-repeat;box-shadow:0 8px 1pc 0 rgba(28,31,33,.1)}
+.course-infos-top .fixed-wrap .con{position:relative;box-sizing:border-box;padding:2pc 40px;width:100%;height:100%}
+.course-infos-top .fixed-wrap .con .time-price{width:100%}
+.course-infos-top .fixed-wrap .con .time-price .no-discount .l{float:left}
+.course-infos-top .fixed-wrap .con .time-price .no-discount .ori-price{color:#f01414;font-weight:700;font-size:30px;line-height:2pc}
+.course-infos-top .fixed-wrap .con .time-price .no-discount .market-price{font-size: 14px;color: #93999f;font-weight: 700;line-height: 2pc;margin-left: 8px;margin-right: 2px;text-decoration: line-through;}
+.course-infos-top .fixed-wrap .con .time-price .sale-timer {margin-right:10px;padding: 6px 12px;background-color: #f90\9\0;background-image: linear-gradient(90deg,rgba(255,0,105,.99) 0,#ff7a00 99%);border-radius: 16px;}
+.course-infos-top .fixed-wrap .con .time-price .sale-timer i {color: #fff;font-style: normal;padding: 0 1px;}
+.course-infos-top .fixed-wrap .con .time-price .sale-timer .name {font-size: 14px;font-weight: 700;color: #fff;line-height: 20px;}
+.course-infos-top .fixed-wrap .con .timer {font-size: 14px;color: #fff;letter-spacing: 0;text-align: left;line-height: 20px;margin-left: 8px;font-weight: 700;}
+.course-infos-top .fixed-wrap .con .info-bar{margin-top:9pt}
+.course-infos-top .fixed-wrap .con .info-bar span{padding-right:8px;color:#545c63;font-weight:700;font-size:9pt;line-height:24px}
+.course-infos-top .fixed-wrap .con .info-bar span.nodistance{padding-right:0;font-weight:400}
+.course-infos-top .fixed-wrap .con .info-bar i{padding:0 4px;color:#545c63;vertical-align:middle;font-size:1pc;line-height:1pc}
+.course-infos-top .fixed-wrap .con .btns{position:absolute;top:40px;right:40px;font-size:0}
+.course-infos-top .fixed-wrap .con .btns .red-btn{padding:9pt 3pc;border-radius:24px;background:#f01414;color:#fff;letter-spacing:0;font-weight:700;font-size:1pc;line-height:24px;-webkit-transition:all .3s;-moz-transition:all .3s;-o-transition:all .3s;transition:all .3s}
+.course-infos-top .fixed-wrap .con .btns .gobuy{margin-right:1pc}
+.course-infos-t{overflow:hidden;padding-top:88px}
+
+
+
+.package-wrap {width: 960px;margin: 0 auto;margin-bottom: -100px;margin-top: 100px;}
+.package-wrap .l{float:left;}
+.package-wrap .package-item {position: relative;margin-bottom: 24px;width: 100%;height: 268px;padding: 36px 0 36px 36px;box-sizing: border-box;border-radius: 16px;background: #fff;overflow: hidden;        box-shadow: 0 8px 1pc 0 rgba(28,31,33,.1);}
+.package-wrap .package-item .left-box {position: relative;width: 216px;height: 188px;margin-right: 36px;text-align: center}
+.package-wrap .package-item .left-box .package-title {width: 100%;margin-bottom: 4px;font-size: 16px;color: #07111b;line-height: 24px;height: 48px;text-overflow: ellipsis;word-break: normal;word-wrap: break-word;overflow: hidden;text-overflow: -o-ellipsis-lastline;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical}
+.package-wrap .package-item .left-box .package-detail {margin-bottom: 12px;width: 100%;font-size: 12px;color: #4d555d;line-height: 24px;text-align: center}
+.package-wrap .package-item .left-box .package-detail .package-course {}
+.package-wrap .package-item .left-box .package-detail i {font-style: normal;text-decoration: line-through}
+.package-wrap .package-item .left-box .package-price-box {position: relative;font-size: 12px;color: #f01414;line-height: 24px;font-weight: 200}
+.package-wrap .package-item .left-box .package-price-box .package-price {font-size: 16px}
+.package-wrap .package-item .left-box .package-price-box:after,.package-wrap .package-item .left-box .package-price-box:before {display: block;position: absolute;top: 24px;width: 20%;content: "";border-top: 1px solid rgba(240,20,20,.4)}
+.package-wrap .package-item .left-box .package-price-box:before {left: 0}
+.package-wrap .package-item .left-box .package-price-box:after {right: 0}
+.package-wrap .package-item .left-box .go-confirm-btn {position: absolute;bottom: 0;left: 60px;margin-top: 16px;display: inline-block;width: 96px;height: 36px;background: #f01414;border-radius: 4px;font-size: 12px;color: #fff;line-height: 36px;text-align: center}
+.package-wrap .package-item .left-box .ungo-confirm {background: #d9dde1}
+.package-wrap .package-item .left-box .unbuy-tip {position: absolute;bottom: -24px;left: 6px;font-size: 12px;color: #93999f;letter-spacing: 0;line-height: 12px}
+.package-wrap .package-item .add-icon {margin: 0 12px;font-size: 24px;color: #4d555d;line-height: 188px;text-align: center}
+.package-wrap .package-item .course-item {position: relative;width: 180px;height: 188px;background: #fff;box-shadow: 0 4px 8px 0 rgba(7,17,27,.1);border-radius: 8px}
+.package-wrap .package-item .course-item img {width: 100%;height: 96px;border-top-left-radius: 8px;border-top-right-radius: 8px}
+.package-wrap .package-item .course-item .text-box {width: 100%;padding: 12px 22px;box-sizing: border-box;font-size: 12px;color: #07111b;letter-spacing: 0;line-height: 20px}
+.package-wrap .package-item .course-item .buy-icon {position: absolute;width: 52px;height: 24px;font-size: 12px;line-height: 24px;color: #fff;background: #4d555d;font-weight: 200;text-align: center;right: -4px;top: 12px;z-index: 1;border-top-left-radius: 6px;border-bottom-left-radius: 6px}
+.package-wrap .package-item .course-item .buy-icon:after {position: absolute;content: '';width: 0;height: 0;overflow: hidden;border-top: 4px solid #07111b;border-right: 4px solid transparent;right: 0;bottom: -4px}
+.package-wrap .package-item .other-course-box {position: relative;width: 420px;height: 195px;overflow: hidden;        overflow-x:auto;}
+.package-wrap .package-item .other-course-box .other-course-wrap {width: 1000px}
+.package-wrap .package-item .other-course-box .other-course-wrap .course-item {margin-right: 24px}
+.package-wrap .package-item .other-course-box .other-course-wrap .course-item:last-child {margin-right: 0}
+.package-wrap .package-item .package-scroll-bar {display: none;position: absolute;width: 384px;height: 8px;bottom: 18px;right: 36px}
+.package-wrap .package-item .package-scroll-bar span {position: absolute;width: 232px;height: 8px;left: 0;top: 0;background: #b7bbbf;border-radius: 4px;box-shadow: 0 2px 4px rgba(7,17,27,.1);transition: .3s box-shadow linear;cursor: pointer}
+.package-wrap .new-package-item {position: relative;margin-bottom: 24px;width: 100%;height: 356px;box-sizing: border-box;background: #fff;border-radius: 12px;overflow: hidden;font-size: 0}
+.package-wrap .new-package-item .package-header {background: #f8fafc;text-align: center;padding: 23px 20px 21px 20px}
+.package-wrap .new-package-item .package-header .package-title {max-width: 740px;display: inline-block;font-size: 22px;color: #1c1f21;line-height: 24px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;vertical-align: middle}
+.package-wrap .new-package-item .package-header label {display: inline-block;height: 18px;font-size: 12px;line-height: 18px;vertical-align: middle;background: #545c63;border-radius: 9px;color: #fff;padding: 0 6px;margin-left: 6px}
+.package-wrap .new-package-item .package-header .package-introduce {width: 100%;font-size: 12px;color: #383d42;line-height: 20px;margin-top: 6px}
+.package-wrap .new-package-item .right-box {position: relative;text-align: center;margin-top: 92px;margin-right: 36px}
+.package-wrap .new-package-item .right-box .package-detail {margin-bottom: 2px;width: 100%;font-size: 12px;color: #4d555d;line-height: 24px;text-align: center}
+.package-wrap .new-package-item .right-box .package-detail .package-course {margin-right: 8px}
+.package-wrap .new-package-item .right-box .package-detail i {font-style: normal;text-decoration: line-through}
+.package-wrap .new-package-item .right-box .package-price-box {position: relative;color: #f01414;line-height: 24px;font-weight: 200;font-size: 0}
+.package-wrap .new-package-item .right-box .package-price-box p {display: inline-block;font-size: 12px}
+.package-wrap .new-package-item .right-box .package-price-box .package-price {font-size: 16px;font-weight: 700;margin-left: 8px}
+.package-wrap .new-package-item .right-box .go-confirm-btn {bottom: 0;left: 60px;margin-top: 16px;display: inline-block;width: 96px;height: 36px;background: #f01414;border-radius: 18px;font-size: 12px;color: #fff;line-height: 36px;text-align: center}
+.package-wrap .new-package-item .right-box .ungo-confirm {background: #d9dde1}
+.package-wrap .new-package-item .right-box .unbuy-tip {bottom: -24px;left: 6px;font-size: 12px;color: #93999f;letter-spacing: 0;line-height: 12px;margin-top: 12px}
+.package-wrap .new-package-item .left-box {position: relative;padding: 28px 44px 0 44px;width: 784px;height: 252px;box-sizing: border-box}
+.package-wrap .new-package-item .left-box .arrow-2 {position: absolute;width: 30px;height: 30px;cursor: pointer;bottom: 84px}
+.package-wrap .new-package-item .left-box .arrow-2.left {left: 6px}
+.package-wrap .new-package-item .left-box .arrow-2.right {right: 6px}
+.package-wrap .new-package-item .left-box .arrow-2.dis {display: none}
+.package-wrap .new-package-item .left-box .arrow-2 i {font-size: 30px;color: #717a84}
+.package-wrap .new-package-item .course-box {position: relative;width: 216px;height: 126px;background: #fff;box-shadow: 0 4px 8px 0 rgba(7,17,27,.1);border-radius: 8px}
+.package-wrap .new-package-item .course-box .buy-icon {position: absolute;width: 52px;height: 24px;font-size: 12px;line-height: 24px;color: #fff;background: #fa0;font-weight: 200;text-align: center;right: -4px;top: 4px;z-index: 1;border-top-left-radius: 6px;border-bottom-left-radius: 6px}
+.package-wrap .new-package-item .course-box .buy-icon:after {position: absolute;content: '';width: 0;height: 0;overflow: hidden;border-top: 4px solid #886006;border-right: 4px solid transparent;right: 0;bottom: -4px}
+.package-wrap .new-package-item .course-box .top-box {height: 84px;position: relative;border-radius: 8px 8px 0 0;overflow: hidden}
+.package-wrap .new-package-item .course-box .top-box p {width: 100%;height: 84px;text-align: left;background-size: cover!important;box-sizing: border-box;padding-top: 34px}
+.package-wrap .new-package-item .course-box .top-box p:after {content: "";display: block;position: absolute;top: 34px;right: 0;left: 0;bottom: 0;background-image: linear-gradient(180deg,rgba(28,31,33,0) 0,rgba(0,0,0,.5) 100%)}
+.package-wrap .new-package-item .course-box .top-box p span {display: block;height: 32px;line-height: 16px;font-size: 12px;padding: 12px 12px 0 12px;color: #fff;position: relative;z-index: 1;text-overflow: -o-ellipsis-lastline;word-break: normal;word-wrap: break-word;white-space: normal;overflow: hidden;text-overflow: ellipsis;display: -webkit-inline-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical}
+.package-wrap .new-package-item .course-box .bottom-box {font-size: 12px;color: #9199a1;padding: 9px 14px;line-height: 24px}
+.package-wrap .new-package-item .course-box .bottom-box span {margin-right: 6px}
+.package-wrap .new-package-item .course-box .bottom-box span.r {color: #f01414}
+.package-wrap .new-package-item .other-course-box {position: relative;width: 696px;padding: 0 5px;left: -5px;height: 204px;overflow: hidden}
+.package-wrap .new-package-item .other-course-box .other-course-wrap {width: 1000px;white-space: nowrap}
+.package-wrap .new-package-item .other-course-box .other-course-wrap .course-item {display: inline-block;vertical-align: middle;margin-right: 24px}
+.package-wrap .new-package-item .other-course-box .other-course-wrap .course-item:last-child {margin-right: 0}
+.package-wrap .new-package-item .other-course-box .other-course-wrap .course-item .course-explain {position: relative;width: 216px;height: 44px;margin-bottom: 22px}
+.package-wrap .new-package-item .other-course-box .other-course-wrap .course-item .course-explain span {display: block;width: 24px;height: 24px;line-height: 24px;font-size: 18px;color: #fff;text-align: center;background: #b2b8bd;border-radius: 50%;position: absolute;left: 0;top: 2px}
+.package-wrap .new-package-item .other-course-box .other-course-wrap .course-item .course-explain pre {font-size: 14px;color: #1c1f21;line-height: 22px;padding-left: 34px;text-overflow: ellipsis;word-break: normal;word-wrap: break-word;white-space: pre-wrap;overflow: hidden;text-overflow: -o-ellipsis-lastline;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical}
+.package-wrap .new-package-item .package-scroll-bar {display: none;position: absolute;width: 384px;height: 8px;bottom: 18px;right: 36px}
+.package-wrap .new-package-item .package-scroll-bar span {position: absolute;width: 232px;height: 8px;left: 0;top: 0;background: #b7bbbf;border-radius: 4px;box-shadow: 0 2px 4px rgba(7,17,27,.1);transition: .3s box-shadow linear;cursor: pointer}

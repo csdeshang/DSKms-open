@@ -1,0 +1,65 @@
+{include file="public/header" /}
+
+
+
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title">
+            <div class="subject">
+                <h3>{$Think.lang.ds_exambank}</h3>
+                <h5></h5>
+            </div>
+            {include file="public/admin_items" /}
+        </div>
+    </div>
+
+    <form method="get" name="formSearch" id="formSearch">
+        <div class="ds-search-form">
+            <dl>
+                <dt>{$Think.lang.ds_member_name}</dt>
+                <dd><input type="text" value="{$Request.param.exambanksuggest_membername}" name="exambanksuggest_membername" class="txt"></dd>
+            </dl>
+            <div class="btn_group">
+                <input type="submit" class="btn" value="{$Think.lang.ds_search}">
+                <a href="{:url('Exambank/index')}" class="btn btn-default" title="{$Think.lang.ds_cancel}">{$Think.lang.ds_cancel}</a>
+            </div>
+        </div>
+    </form>
+
+    <table class="ds-default-table">
+        <thead>
+            <tr>
+                <th class="w150">{$Think.lang.ds_member_name}</th>
+                <th class="w150">{$Think.lang.exambank_question}</th>
+                <th class="w300">{$Think.lang.exambanksuggest_describe}</th>
+                <th>{$Think.lang.exambank_addtime}</th>
+                <th>{$Think.lang.ds_handle}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {notempty name="exambanksuggest_list"}
+            {foreach name="exambanksuggest_list" item="exambanksuggest"}
+            <tr id="ds_row_{$exambanksuggest.exambanksuggest_id}">
+                <td>{$exambanksuggest.exambanksuggest_membername}</td>
+                <td>{$exambanksuggest.exambank_question|htmlspecialchars_decode|strip_tags}</td>
+                <td>{$exambanksuggest.exambanksuggest_describe}</td>
+                <td>{$exambanksuggest.exambanksuggest_addtime|date='Y-m-d'}</td>
+                <td>
+                    {if $exambanksuggest.exambanksuggest_feedback eq ''}
+                    <a href="{:url('Exambank/edit',['exambank_id'=>$exambanksuggest.exambank_id])}" class="dsui-btn-view"><i class="iconfont"></i>{$Think.lang.ds_view}</a>
+                    <a class="dsui-btn-edit" href="javascript:dsLayerOpen('{:url('Exambank/suggestedit',['exambanksuggest_id'=>$exambanksuggest.exambanksuggest_id])}','{$Think.lang.exambanksuggest_reply}-{$exambanksuggest.exambanksuggest_id}','800px','400px')">{$Think.lang.exambanksuggest_reply}</a>
+                    {else}
+                    <span>{$Think.lang.exambanksuggest_has_reply}</span>
+                    {/if}
+                </td>
+            </tr>
+            {/foreach}
+            {else /}
+            <tr class="no_data">
+                <td colspan="10">{$Think.lang.ds_no_record}</td>
+            </tr>
+            {/notempty}
+        </tbody>
+    </table>
+    {$show_page|raw}
+</div>

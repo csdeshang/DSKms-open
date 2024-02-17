@@ -1,0 +1,46 @@
+{extend name="default/base/base_member" /}
+{block name="member_main"}
+
+<table class="dsm-default-table">
+    <thead>
+    <tr>
+        <th class="w10"></th>
+        
+        <th class="w120">{$Think.lang.exambank_question}</th>
+        <th class="w120">{$Think.lang.memberexambanksuggest_describe}</th>
+        <th class="w120">{$Think.lang.memberexambanksuggest_feedback}</th>
+        <th class="w120">{$Think.lang.memberexambanksuggest_time}</th>
+    </tr>
+    </thead>
+    {notempty name="exambanksuggest_list"}
+    <tbody>
+    {foreach name="exambanksuggest_list" item="val"}
+    <tr class="bd-line">
+        <td></td>
+         <td>{$val.exambank_question|htmlspecialchars_decode|strip_tags}</td>
+        <td>{$val.exambanksuggest_describe}</td>
+        <td>{$val.exambanksuggest_feedback}</td>
+        <td>{$val.exambanksuggest_addtime|date="Y-m-d H:i:s"}</td>
+    </tr>
+    {/foreach}
+    {else /}
+    <tr>
+        <td colspan="20" class="norecord">
+            <div class="warning-option"><i>&nbsp;</i><span>{$Think.lang.no_record}</span></div>
+        </td>
+    </tr>
+    {/notempty}
+    </tbody>
+    <tfoot>
+    {notempty name="exambanksuggest_list"}
+    <tr>
+        <td colspan="20">
+            <div class="pagination">{$show_page|raw}</div>
+        </td>
+    </tr>
+    {/notempty}
+    </tfoot>
+</table>
+
+
+{/block}

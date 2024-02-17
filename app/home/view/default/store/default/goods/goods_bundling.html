@@ -1,0 +1,55 @@
+{if !empty($gcombo_list)}
+<div class="package-wrap">
+    <div class="package-item js-package-combine clearfix"> 
+        <!-- 组合套餐展示说明 --> 
+        <div class="left-box l "> 
+            <p class="package-title">推荐组合</p> 
+            <div class="package-detail"> 
+                <span class="package-course">{:count($gcombo_list)}门课</span> 
+            </div> 
+            <div class="package-price-box"> 
+                <p class="text">全套价格</p> 
+                <p class="package-price">{$Think.lang.currency|raw}<em dstype="gbcc_p">{$goods_info.goods_price}</em></p> 
+            </div> 
+        </div> 
+        <!-- 当前课程信息 --> 
+        <div class="current-course-item course-item l"> 
+            <img src="{:goods_thumb($goods_info, 240)}" /> 
+            <div class="text-box"> 
+                <p>{$goods_info.goods_name}</p> 
+            </div> 
+        </div> 
+        <!-- + --> 
+        <div class="add-icon sz-add l iconfont">&#xe6db;</div> 
+        <!-- 组合套餐中其他课程 --> 
+        <div class="other-course-box js-combine-box l"> 
+            <!-- 右侧其他课程 --> 
+            <div class="other-course-wrap js-combine-scroll clearfix" style="width: {:count($gcombo_list)*204}px;"> 
+                {foreach name="gcombo_list" item="combo"  }
+                <a href="{:url('Goods/index',['goods_id'=>$combo.goods_id])}" target="_blank" class="course-item l"> 
+                    <div> 
+                        <img src="{:goods_thumb($combo, 240)}" /> 
+                        <div class="text-box"> 
+                            <p>{$combo.goods_name}</p> 
+                            <em dstype="comb" style="display: none">{$combo.goods_price}</em>
+                        </div> 
+                    </div> </a> 
+                {/foreach}
+            </div> 
+        </div> 
+        <!-- 滚动轴 --> 
+        <div class="package-scroll-bar" style="display: none;"> 
+            <span></span> 
+        </div> 
+    </div>
+</div>
+<script>
+    $(function(){
+          var gbcc_p = {$goods_info.goods_price};
+          $('em[dstype="comb"]').each(function(){
+              gbcc_p += parseFloat($(this).text());
+          });
+          $('em[dstype="gbcc_p"]').html(number_format(gbcc_p,2));
+    })
+</script>
+{/if}

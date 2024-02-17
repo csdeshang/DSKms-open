@@ -1,0 +1,56 @@
+{extend name="default/base/base_member" /}
+{block name="member_main"}
+
+
+<div class="dsm-default-form fl">
+    <form method="post" action="" id="memberexambanksuggest_form">
+        <dl>
+            <dt>{$Think.lang.exambank_question}：</dt>
+            <dd>
+                <span class="w500">
+                    {$exambank.exambank_question|htmlspecialchars_decode|strip_tags}
+                </span>
+            </dd>
+        </dl>
+        <dl>
+            <dt>{$Think.lang.memberexambanksuggest_describe}：</dt>
+            <dd>
+                <span class="w500">
+                    <textarea name="exambanksuggest_describe" cols="50" rows="10"></textarea>
+                </span>
+            </dd>
+        </dl>
+        <dl class="bottom">
+            <dt></dt>
+            <dd>
+                <input type="submit" class="submit" value="{$Think.lang.ds_submit}">
+            </dd>
+        </dl>
+    </form>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#memberexambanksuggest_form').validate({
+            submitHandler: function (form) {
+                ds_ajaxpost('memberexambanksuggest_form', 'url', "{:url('memberexambanksuggest/index')}");
+            },
+            rules: {
+                exambanksuggest_describe: {
+                    required: true
+                }
+            },
+            messages: {
+                exambanksuggest_describe: {
+                    required: '{$Think.lang.memberexambanksuggest_describe_tip}'
+                }
+            }
+        });
+    });
+</script>
+
+
+{/block}
+
+

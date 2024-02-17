@@ -1,0 +1,49 @@
+{include file="public/header" /}
+
+
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title">
+            <div class="subject">
+                <h3>{$Think.lang.ds_courseware_set}</h3>
+                <h5></h5>
+            </div>
+            {include file="public/admin_items" /}
+        </div>
+    </div>
+    <form method="post" enctype="multipart/form-data" name="form1">
+        <div class="ncap-form-default">
+            <div class="alioss">
+                        <dl>
+                            <dt>百度云盘应用名称</dt>
+                            <dd>
+                                <input name="baidu_pan_app_name" value="{$list_config.baidu_pan_app_name|default=''}" class="input-txt" type="text">
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>百度云盘应用ID</dt>
+                            <dd>
+                                <input name="baidu_pan_id" value="{$list_config.baidu_pan_id|default=''}" class="input-txt" type="text">
+                                <span class="tips"><a href="http://pan.baidu.com/union/apply" target="_blank">{$Think.lang.ds_apply}</a></span>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>百度云盘应用API Key</dt>
+                            <dd>
+                                <input name="baidu_pan_api_key" value="{$list_config.baidu_pan_api_key|default=''}" class="input-txt" type="text">
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>百度云盘应用Secret Key</dt>
+                            <dd>
+                                <input name="baidu_pan_secret_key" value="{$list_config.baidu_pan_secret_key|default=''}" class="input-txt" type="password">
+                            </dd>
+                        </dl>
+                    </div>
+                    <dl>
+                        <dt></dt>
+                        <dd><a href="JavaScript:void(0);" class="btn" onclick="document.form1.submit()">确认提交</a></dd>
+                    </dl>
+                </div>
+            </form>
+        </div>

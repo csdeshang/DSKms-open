@@ -1,0 +1,81 @@
+{include file="public/header" /}
+
+
+
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title">
+            <div class="subject">
+                <h3>{$Think.lang.ds_video}</h3>
+                <h5></h5>
+            </div>
+            {include file="public/admin_items" /}
+        </div>
+    </div>
+
+        <table class="ds-default-table">
+            <tbody>
+            {notempty name="video_list"}
+            <tr>
+                <td colspan="20">
+                    <ul class="thumblists">
+                        {foreach name="video_list" item="v"}
+                        <li class="picture" id="ds_row_{$v.videoupload_id}" style="width:254px !important;height: 274px;">
+                            <div>
+                                <video title='{$v.videoupload_time|date="Y-m-d"}<br>{$v.store_name}' controls="" height="240" width="240" src="{$v.videoupload_url}" class="tip" />
+                            </div>
+                            
+                            <p>
+                                <span><input class="checkitem" type="checkbox" name="delbox[]" value="{$v.videoupload_id}"></span><span>
+                                    {if !$v.videoupload_state}
+                                    <a href="javascript:dsLayerConfirm('{:url('Videoupload/verify_video',['videoupload_id'=>$v.videoupload_id])}','{$Think.lang.ds_ensure_operation}','reload')">{$Think.lang.ds_verify}</a>
+                                    {/if}
+                                    <a href="javascript:dsLayerConfirm('{:url('Videoupload/del_video',['videoupload_id'=>$v.videoupload_id])}','{$Think.lang.ds_ensure_del}',{$v.videoupload_id})">{$Think.lang.ds_del}</a>
+                                </span>
+                            </p>
+                            
+                        </li>
+                        {/foreach}
+                    </ul>
+                </td>
+            </tr>
+            {else /}
+            <tr class="no_data">
+                <td colspan="15">{$Think.lang.ds_no_record}</td>
+            </tr>
+            {/notempty}
+            </tbody>
+            <tfoot>
+            <tr class="tfoot">
+                <td class="w48"><input id="checkallBottom" class="checkall" type="checkbox"/></td>
+                <td colspan="16">
+                    <label for="checkallBottom">{$Think.lang.ds_select_all}</label>
+                    <a class="btn btn-small" href="javascript:void(0);" onclick="submit_delete_batch()"><span>{$Think.lang.ds_del}</span></a>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+         {$show_page|raw}
+
+</div>
+<script>
+    jQuery.browser={};(function(){jQuery.browser.msie=false; jQuery.browser.version=0;if(navigator.userAgent.match(/MSIE ([0-9]+)./)){ jQuery.browser.msie=true;jQuery.browser.version=RegExp.$1;}})();
+</script>
+<script src="{$Think.PLUGINS_SITE_ROOT}/jquery.poshytip.min.js"></script>
+<script>
+    $(function () {
+        $('.tip').poshytip({
+            className: 'tip-yellowsimple',
+            alignTo: 'target',
+            alignX: 'center',
+            alignY: 'bottom',
+            offsetX: 0,
+            offsetY: 5,
+            allowTipHover: false
+        });
+    });
+    function submit_delete(ids_str){
+        _uri = ADMINSITEURL+"/Videoupload/del_video.html?videoupload_id=" + ids_str;
+        dsLayerConfirm(_uri,'{$Think.lang.ds_ensure_del}');
+    }
+</script>

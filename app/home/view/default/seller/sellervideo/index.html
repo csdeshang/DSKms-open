@@ -1,0 +1,389 @@
+{extend name="default/base/base_seller" /}
+{block name="seller_btn"}
+<div style='overflow: hidden;margin-top: 20px;margin-right: 20px'>
+<a href="javascript:void(0);" dstype="upload_type_cloud" class="upload_type dssc-upload-btn pr" style='float: right'>
+    <span>
+        <input type="file" hidefocus="true" size="1" class="input-file" name="goodsvideo" id="goodsvideo">
+    </span>
+    <p><i class="iconfont">&#xe733;</i>上传视频</p>
+</a>
+<a href="javascript:void(0);" dstype="upload_type_link" class="upload_type" style='float: right;display:none'>
+    <input type="text" class="w300 text" id="video_url">
+    <div class="dssc-upload-btn pr" onclick="submitVideo()">
+        <p><i class="iconfont">&#xe733;</i>上传视频</p>
+    </div>
+</a>
+  
+</div>
+<p class="hint" style="text-align: right;margin-right: 20px">视频将上传到<span id='upload_type_text'>服务器</span>，请点击 <a href="javascript:setUploadType('cloud','服务器');">服务器</a>/<a href="javascript:setUploadType('link','外部链接');">外部链接</a> 切换</p>  
+<p class="hint" style="text-align: right;margin-right: 20px;margin-top:0">如果视频不能正常播放，请将视频转换为H264编码的MP4格式</p>
+{/block}
+
+
+
+{block name="seller_main"}
+<div id="pictureFolder" class="dssc-picture-folder">
+    {notempty name="videoupload_list"}
+    <form name="checkboxform" id="checkboxform" method="POST" action="">
+        <div class="dssc-picture-list">
+            <ul>
+                {foreach name="videoupload_list" item="v" }
+                <li style="width:268px;height:268px">
+                    <dl style="width:240px;height:240px">
+                        <dt style="width:240px;height:240px">
+                            <div class="picture" style="width:240px;height:240px">
+                                <video controls="" height="240" width="240" src="{$v.videoupload_url}"/>
+                            </div>
+                        </dt>
+                        <dd class="buttons" style="top:0;left:0">
+                            <a href="javascript:void(0)" onclick="ds_ajaxget_confirm('{:url('Sellervideo/del',['id'=>$v.videoupload_id,'return_json'=>1])}', '{$Think.lang.ds_common_op_confirm}');"><i class="iconfont">&#xe725;</i>{$Think.lang.store_video_delete}</a>
+                        </dd>
+                    </dl>
+                </li>
+                {/foreach}
+            </ul>
+        </div>
+    </form>
+    <div class="pagination">{$show_page|raw}</div>
+    {else /}
+    <div class="warning-option"><i class="iconfont">&#xe64c;&nbsp;</i><span>{$Think.lang.no_record}</span></div>
+    {/notempty}
+</div>
+<script src="{$Think.PLUGINS_SITE_ROOT}/spark-md5.min.js"></script>
+{if $Think.config.ds_config.video_type=='tencent'}
+<script src="//cdn.bootcss.com/axios/0.18.0/axios.js"></script>
+<script src="//unpkg.com/vod-js-sdk-v6"></script>
+{/if}
+{if $Think.config.ds_config.video_type=='aliyun'}
+<script src="{$Think.PLUGINS_SITE_ROOT}/aliyun-upload-sdk-1.5.0/aliyun-upload-sdk-1.5.0.min.js"></script>
+<script src="{$Think.PLUGINS_SITE_ROOT}/aliyun-upload-sdk-1.5.0/lib/es6-promise.min.js"></script>
+<script src="{$Think.PLUGINS_SITE_ROOT}/aliyun-upload-sdk-1.5.0/lib/aliyun-oss-sdk-5.3.1.min.js"></script>
+{/if}
+<script>
+    
+    var total_cloud_space={$total_cloud_space};
+    var total_local_space={$total_local_space};
+    var cloud_limit={$cloud_limit};
+    var local_limit={$local_limit};
+    
+    var fileInfo
+    var chunkLength
+    $(function () {
+
+
+   function fileSlice(file, chunkSize = 1024*1024*2){
+        // 1.初始化数据
+        var totalSize = file.size;
+        var start = 0;
+        var end = start + chunkSize;
+        var chunks = [];
+        // 2.使用bolb提供的slice方法切片
+        while(start < totalSize){
+            var chunk = file.slice(start, end);
+            chunks.push(chunk);
+            start = end;
+            end += chunkSize;
+        }
+        // 3.返回切片组chunk[]
+        return chunks;
+    }
+ 
+    function sendChunk(unique_tag, chunks){
+        // 逐个提交
+        chunks.forEach(function(chunk, index){
+            var formData = new FormData();
+            //唯一标识
+            formData.append('unique_tag', unique_tag);
+            //文件
+            formData.append('file', chunk);
+            //片的总数
+            formData.append('total_num', chunks.length);
+            //当前传输的片数
+            formData.append('now_num', index+1);
+        
+            $.ajax({
+                type: "POST",
+                url: "{:url('Sellervideo/upload')}",
+                dataType: 'json',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(data){
+                    if (data.code == 10000) {
+                            index = layer.msg(Math.round((chunks.length-chunkLength)/chunks.length*100)+'%', {
+                                icon: 16
+                            })
+                        chunkLength--
+                        if(chunkLength<=0){
+                            $.ajax({
+                                type: "POST",
+                                url: "{:url('Sellervideo/merge')}",
+                                dataType: 'json',
+                                data: formData,
+                                contentType: false,
+                                processData: false,
+                                success: function(data){
+                                    if (data.code == 10000) {
+                                        layer.close(index)
+                                        save_video({
+                                            video_type: 'local',
+                                            file_name:fileInfo.name,
+                                            size:fileInfo.size,
+                                            url: data.result.name,
+                                            type: "{$Request.param.type}",
+                                            item_id: "{$Request.param.item_id}"
+                                        })
+                                    } else {
+                                        layer.msg(data.message)
+                                        layer.close(index)
+                                    }
+                                }
+                            })
+                        }
+                    } else {
+                        layer.msg(data.message)
+                        layer.close(index)
+                    }
+
+                }
+            })
+        })
+    }
+ 
+        /*上传到本地服务器结束*/
+        
+        
+        //鼠标触及区域li改变class
+        $(".dssc-picture-list ul li").hover(function () {
+            $(this).addClass("hover");
+        }, function () {
+            $(this).removeClass("hover");
+        });
+
+        var index
+        // ajax 上传图片
+        $('#goodsvideo').change(function (event) {
+            if('{$Think.config.ds_config.upload_video_type}' == 'cloud'){
+              /*{if ($Think.config.ds_config.video_type=='tencent' && !$Think.config.ds_config.vod_tencent_appid) || ($Think.config.ds_config.video_type=='aliyun' && !$Think.config.ds_config.aliyun_user_id)}*/
+              layer.msg('请先联系管理员完成视频上传配置')
+              return
+              /*{/if}*/
+              fileInfo = event.target.files[0]
+              if(cloud_limit && (total_cloud_space+fileInfo.size)>cloud_limit*1024*1024){
+                  layer.msg('您的视频已超出所属店铺等级云视频空间限制'+cloud_limit+'MB')
+                  return
+              }
+              index = layer.msg('0%', {
+                  icon: 16
+              })
+              /*{if $Think.config.ds_config.video_type=='tencent'}*/
+              const tcVod = new TcVod.default({
+                  getSignature: getSignature
+              })
+              const uploader = tcVod.upload({
+                  videoFile: fileInfo // 媒体文件（视频或音频或图片），类型为 File
+              })
+              $('#goodsvideo').val('')
+              uploader.on('media_progress',
+                      function (info) {
+                          layer.close(index)
+                          index = layer.msg(parseInt(info.percent * 100) + '%', {
+                              icon: 16
+                          })
+                      })
+              uploader.done().then(function (doneResult) {
+                  layer.close(index)
+                  save_video({
+                      video_type: 'tencent',
+                      file_name: fileInfo.name,
+                  size:fileInfo.size,
+                      file_id: doneResult.fileId,
+                      url: doneResult.video.url,
+                      type: "{$Request.param.type}",
+                      item_id: "{$Request.param.item_id}"
+                  })
+              }).catch(function (err) {
+                  layer.msg(err.message)
+              })
+              /*{/if}*/
+              /*{if $Think.config.ds_config.video_type=='aliyun'}*/
+              var userData = '{"Vod":{}}'
+              uploader.addFile(fileInfo, null, null, null, userData)
+              uploader.startUpload()
+              /*{/if}*/  
+            }else{
+                var myfile = event.target.files[0];
+                    fileInfo=myfile
+                    if(local_limit && (total_local_space+fileInfo.size)>local_limit*1024*1024){
+                        layer.msg('您的视频已超出所属店铺等级本地视频空间限制'+local_limit+'MB')
+                        return
+                    }
+                // 定义文件标识符  
+                var unique_tag = SparkMD5.ArrayBuffer.hash(myfile);
+                // 数据切片
+                var chunks = fileSlice(myfile);
+                chunkLength=chunks.length
+                // 发送分割数据段
+                    index = layer.msg('0%', {
+                        icon: 16
+                    })
+                sendChunk(unique_tag, chunks);
+            }
+            
+        });
+    });
+    /* 更换上传 */
+    function setUploadType(id,text){
+        $('.upload_type').hide()
+        $('*[dstype=upload_type_'+id+']').show()
+        $('#upload_type_text').text(text)
+    }
+    /* 视频外链 */
+        function submitVideo(){
+            var url=$('#video_url').val()
+            if(!url){
+                layer.msg('请填写视频链接')
+                return
+            }
+            save_video({
+                    video_type: 'link',
+                    url: url,
+                    type: "{$Request.param.type}",
+                    item_id: "{$Request.param.item_id}"
+                })
+        }
+    /* 保存视频 */
+    function save_video(param) {
+        //上传成功更新数据库
+        $.post("{:url('Sellervideo/saveVideo')}", param,
+                function (data) {
+                    if (data.code == '10000') {
+                        total_cloud_space=data.result.total_cloud_space
+                        total_local_space=data.result.total_local_space
+                        cloud_limit=data.result.cloud_limit
+                        local_limit=data.result.local_limit
+                        $('a[dstype="show_video"]').click()
+                        layer.msg("{$Think.lang.store_goods_video_verify}")
+                        location.reload()
+                    } else {
+                        layer.msg(data.message)
+                    }
+                },
+                'json');
+    }
+    /*{if $Think.config.ds_config.video_type=='tencent'}*/
+    function getSignature() {
+        return axios.post("{:url('Sellervideo/getTencentSign')}", JSON.stringify({})).then(function (response) {
+            return response.data.result
+        })
+    }
+    /*{/if}*/
+    /*{if $Think.config.ds_config.video_type=='aliyun'}*/
+    //兼容IE11
+    if (!FileReader.prototype.readAsBinaryString) {
+        FileReader.prototype.readAsBinaryString = function (fileData) {
+            var binary = "";
+            var pt = this;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var bytes = new Uint8Array(reader.result);
+                var length = bytes.byteLength;
+                for (var i = 0; i < length; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                //pt.result  - readonly so assign binary
+                pt.content = binary;
+                pt.onload()
+            }
+            reader.readAsArrayBuffer(fileData);
+        }
+    }
+    var uploader = null
+    /** 
+     * 创建一个上传对象
+     * 使用 UploadAuth 上传方式
+     */
+    var uploader = new AliyunUpload.Vod({
+        userId: '{$Think.config.ds_config.aliyun_user_id}',
+        // 添加文件成功
+        addFileSuccess: function (uploadInfo) {
+        },
+        // 开始上传
+        onUploadstarted: function (uploadInfo) {
+            // 如果是 UploadAuth 上传方式, 需要调用 uploader.setUploadAuthAndAddress 方法
+            // 如果是 UploadAuth 上传方式, 需要根据 uploadInfo.videoId是否有值，调用点播的不同接口获取uploadauth和uploadAddress
+            // 如果 uploadInfo.videoId 有值，调用刷新视频上传凭证接口，否则调用创建视频上传凭证接口
+            // 注意: 这里是测试 demo 所以直接调用了获取 UploadAuth 的测试接口, 用户在使用时需要判断 uploadInfo.videoId 存在与否从而调用 openApi
+            // 如果 uploadInfo.videoId 存在, 调用 刷新视频上传凭证接口(https://help.aliyun.com/document_detail/55408.html)
+            // 如果 uploadInfo.videoId 不存在,调用 获取视频上传地址和凭证接口(https://help.aliyun.com/document_detail/55407.html)
+            if (!uploadInfo.videoId) {
+                $.getJSON('{:url("Sellervideo/getAliyunCreateToken")}?file_name=' + uploadInfo.file.name, function (res) {
+                    var data = res.result
+                    var uploadAuth = data.UploadAuth
+                    var uploadAddress = data.UploadAddress
+                    var videoId = data.VideoId
+                    uploader.setUploadAuthAndAddress(uploadInfo, uploadAuth, uploadAddress, videoId)
+                })
+            } else {
+                // 如果videoId有值，根据videoId刷新上传凭证
+                // https://help.aliyun.com/document_detail/55408.html?spm=a2c4g.11186623.6.630.BoYYcY
+                $.getJSON('{:url("Sellervideo/getAliyunRefreshToken")}?video_id=' + uploadInfo.videoId, function (res) {
+                    var data = res.result
+                    var uploadAuth = data.UploadAuth
+                    var uploadAddress = data.UploadAddress
+                    var videoId = data.VideoId
+                    uploader.setUploadAuthAndAddress(uploadInfo, uploadAuth, uploadAddress, videoId)
+                })
+            }
+        },
+        // 文件上传成功
+        onUploadSucceed: function (uploadInfo) {
+            save_video({
+                video_type: 'aliyun',
+                file_id: uploadInfo.videoId,
+                file_name:fileInfo.name,
+                size:fileInfo.size,
+                url: uploadInfo.object,
+                type: "{$Request.param.type}",
+                item_id: "{$Request.param.item_id}"
+            })
+        },
+        // 文件上传失败
+        onUploadFailed: function (uploadInfo, code, message) {
+            layer.msg(uploadInfo.file.name + message)
+        },
+        // 取消文件上传
+        onUploadCanceled: function (uploadInfo, code, message) {
+        },
+        // 文件上传进度，单位：字节, 可以在这个函数中拿到上传进度并显示在页面上
+        onUploadProgress: function (uploadInfo, totalSize, progress) {
+            var progressPercent = Math.ceil(progress * 100)
+            layer.close(index)
+            index = layer.msg(progressPercent + '%', {
+                icon: 16
+            })
+        },
+        // 上传凭证超时
+        onUploadTokenExpired: function (uploadInfo) {
+            // 上传大文件超时, 如果是上传方式一即根据 UploadAuth 上传时
+            // 需要根据 uploadInfo.videoId 调用刷新视频上传凭证接口(https://help.aliyun.com/document_detail/55408.html)重新获取 UploadAuth
+            // 然后调用 resumeUploadWithAuth 方法, 这里是测试接口, 所以我直接获取了 UploadAuth
+
+            $.getJSON('{:url("Sellervideo/getAliyunRefreshToken")}?video_id=' + uploadInfo.videoId, function (res) {
+                var data = res.result
+                var uploadAuth = data.UploadAuth
+                uploader.resumeUploadWithAuth(uploadAuth)
+            })
+        },
+        // 全部文件上传结束
+        onUploadEnd: function (uploadInfo) {
+        }
+    })
+    /*{/if}*/
+
+</script>
+
+
+
+
+{/block}

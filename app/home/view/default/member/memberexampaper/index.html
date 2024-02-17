@@ -1,0 +1,27 @@
+{extend name="default/base/base_home" /}
+{block name="mall_main"}
+<link rel="stylesheet" href="{$Think.PLUGINS_SITE_ROOT}/exampaper_answer.css">
+<div class="exampaper_index mt10 mb10">
+    <div class="w1200">
+        <ul class="list clearfix">
+            {notempty name="exampaper_list"}
+            {foreach name="exampaper_list" item="item"}
+            <li class="fl">
+                <a href="{:url('Memberexampaper/answer',['exampaper_id'=>$item.exampaper_id])}">
+                    <div class="exampaper_name">试卷名称：{$item.exampaper_name}</div>
+                    <div class="time">考试时间：{$item.exampaper_time }分钟</div>
+                    <div class="score">考试总分：{$item.exampaper_score }分</div>
+                    <div class="passscore">考试及格分：{$item.exampaper_passscore}分</div>
+                </a>
+            </li>
+            {/foreach}
+            {else /}
+            <li>{$Think.lang.article_article_no_new_article}</li>
+            {/notempty}
+        </ul>
+        {notempty name="exampaper_list"}
+        <div class="pagination">{$show_page|raw}</div>
+        {/notempty}
+    </div>
+</div>
+{/block}

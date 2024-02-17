@@ -1,0 +1,172 @@
+<div class="goods-gallery add-step2">
+    <a class="sample_demo" id="select_s" href="{:url('SellerCourseware/baidu_pan_file')}" style="display:none;">{$Think.lang.ds_submit}</a>
+    <div class="nav"><span class="l">网盘文件</span></div>
+    
+    <div class='courseware-wrapper'>
+        <div id="directory-list" class="table">
+        <div class="tbody"> 
+            <!--{if $dir}-->
+            <a class="dir table-row back" href="{:url('SellerCourseware/baidu_pan_file',['dir'=>$back_dir])}"> 
+                <span class="table-cell icon"><i class="fa fa-level-up"></i></span> 
+                <span class="table-cell name">..</span> 
+                <span class="table-cell size"></span> 
+                <span class="table-cell rev"></span> 
+                
+                <span class="table-cell date"></span> 
+                <span class="table-cell author"></span> 
+            </a> 
+            <!--{/if}-->
+            <!--{foreach name='file_list' item='item'}-->
+            <!--{if $item.isdir==1}-->
+            <a class="dir table-row dir" href="{:url('SellerCourseware/baidu_pan_file',['dir'=>$dir.'/'.$item['server_filename']])}"> 
+                <span class="table-cell icon"><i class="fa fa-folder"></i></span> 
+                <span class="table-cell name">{$item.server_filename}</span> 
+                <span class="table-cell size"></span> 
+                <span class="table-cell rev">文件夹</span> 
+                
+                <span class="table-cell date"><span>{$item.date}</span></span> 
+                <span class="table-cell author"></span> 
+            </a> 
+            <!--{else}-->
+            <a class="file table-row"> 
+                <span class="table-cell icon"><i class="fa fa-file-text-o"></i></span> 
+                <span class="table-cell name">{$item.server_filename}</span> 
+                <span class="table-cell size">{$item.size_text}</span> 
+                <span class="table-cell rev">{$item.category_text}</span> 
+                
+                <span class="table-cell date"><span>{$item.date}</span></span> 
+                <span class="table-cell author"><span class='link' onclick='goCheck("{$item.fs_id}","{$item.server_filename}")'>选择</span></span> 
+            </a> 
+            <!--{/if}-->
+            <!--{/foreach}-->
+        </div>
+    </div>
+    </div>
+    <!--{empty name="file_list"}-->
+    <div class="warning-option"><i class="iconfont">&#xe64c;</i><span>没有文件</span></div>
+    <!--{/empty}-->
+</div>
+<script>
+    $(document).ready(function () {
+        $('.goods-gallery .pagination li a').ajaxContent({
+            event: 'click', //mouseover
+            loaderType: 'img',
+            loadingMsg: '{$Think.HOME_SITE_ROOT}/images/loading.gif',
+            target: '#courseware_list'
+        });
+        $('#directory-list .back').ajaxContent({
+            event: 'click', //mouseover
+            loaderType: 'img',
+            loadingMsg: '{$Think.HOME_SITE_ROOT}/images/loading.gif',
+            target: '#courseware_list'
+        });
+        $('#directory-list .dir').ajaxContent({
+            event: 'click', //mouseover
+            loaderType: 'img',
+            loadingMsg: '{$Think.HOME_SITE_ROOT}/images/loading.gif',
+            target: '#courseware_list'
+        });
+    });
+
+</script>
+<style>
+    .courseware-wrapper{
+        max-height: 320px;
+        overflow: auto;
+    }
+    .table {
+        display: table;
+        border-collapse: collapse;
+    }
+    .tbody {
+        display: table-row-group;
+    }
+    .table > .tbody > .table-row,
+    .table > .tfoot > .table-row {
+        background: none repeat scroll 0% 0% rgb(255, 255, 255);
+        border-bottom: 1px solid #eaecef;
+        color: #24292e;
+    }
+
+    .table > .tbody > .table-row:first-child > .table-cell,
+    .table > .tfoot > .table-row:first-child > .table-cell {
+        border-top: 1px solid #eaecef;
+    }
+    .table .table-row > .table-cell {
+        padding: 7px 7px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .table-row
+    {
+        display: table-row;
+        width: 500px;
+    }
+
+    .table-cell
+    {
+        display: table-cell;
+    }
+
+    #directory-list
+    {
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    #directory-list .thead > .table-cell
+    {
+        display: none;
+    }
+
+    #directory-list .icon
+    {
+        color: #3b73af;
+        width: 15px;
+        text-align: center;
+        padding-right: 0px;
+    }
+
+    #directory-list .name
+    {
+        white-space: nowrap;
+        color: #165ba5;
+        text-decoration: none;
+    }
+
+    #directory-list .dir .name
+    {
+        font-weight: 600;
+    }
+
+    #directory-list .size
+    {
+        min-width: 85px;
+        text-align: right;
+    }
+
+    #directory-list .rev
+    {
+        text-align: right;
+    }
+    #directory-list .date {
+        width: 85px;
+        white-space: nowrap;
+    }
+    #directory-list .author {
+        width: 20px;
+        white-space: nowrap;
+    }
+    .fa{
+        background-size:100%;
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+    }
+    .link{color:#165ba5;cursor: pointer}
+    .fa-level-up{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAlwSFlzAAAOwwAADsMBx2+oZAAAAAZiS0dEAAAAAAAA+UO7fwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMC0wOS0wM1QxNzozNTo1NSswODowMLvMDJoAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjAtMDktMDNUMTc6MzU6NTUrMDg6MDDKkbQmAAAASnRFWHRzdmc6YmFzZS11cmkAZmlsZTovLy9ob21lL2FkbWluL2ljb24tZm9udC90bXAvaWNvbl9qZjA5Z2F4MnRzai9qaWFuZ2ppLnN2Z8dj8wYAAAFMSURBVEhLYxgFpALXiyUxu3S5uW1sKiq2bBEUhAqTDZigNEHgqZK7bdstdvavX/9N/qa6c+f/+t9hv68dPGgtXKa20YqXF6qMZEC0Az7xsdX8VJ05k7GUseV/rLU1QwPDUgZVXd3/T/4+/2e9dCkDQ/3/+v9MRJsHAwQ1WD0r7tywpbCQgZPBkWFDfDxUGA4YXRjSGKx8fa3ef2XX/97ZCRUmGhB28dz/vP+v/fjxPwTEmTWLIfh/DcPtb9/AckAAE2f0YwhjXPzuHViQlsDavlhlfdPTp9bWxcXr1///DxUmG5AcZ9QGow6g2AFWu4o/b9BftQpOLyj2Xv+guRkk9/8/IyNYER5AUAE6gCVChj8M/gy6UlJQYQzAyMi4nXF7RcWRIz3XAmbhzp6kh4Dnv5/MEm5uEL+ZmOCiGVL/xfw/uH49iDcKcAMGBgBrUnVg/iS8gQAAAABJRU5ErkJggg==)}
+    .fa-folder{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAAASAAAAEgARslrPgAAAR1JREFUSMdjYBjpgBFdwHp3edlmIzk5xsafVb9+sbCgy3NOZcnhZXz5crd+zxK3y1+/Us0B1rlFHmu3WVgwnGPUZvp5/DhOHR8YKhkyrl5lucKU8Xuyi8tBxu41YWEvXlDugP/F/9f/d3BgsGEoYdiwfz8hjf+rGRYylt6+zVDB6PEvra6OifefKIPy37841YsyCjKo/f3Ld+WXCQf71q3b70z28lL7+ZOFkEU4Xd7KEP+/W1WVgfc/AyPD8uX/MWMTFbxm+Mhwh4Hhwyq2Z7/v2NszGDEwMDAcOsRErgPIBUyGDMn/Spjg9tLdARgOGnXAqAPgrLz/nv+2//hBcxvR7CG5KCYX/K9nb2Nj+/PnqGtnl++5R49o7tEhAwBwO2s2jAuAfAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMC0wOS0wM1QxNzozNTo1NSswODowMLvMDJoAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjAtMDktMDNUMTc6MzU6NTUrMDg6MDDKkbQmAAAAU3RFWHRzdmc6YmFzZS11cmkAZmlsZTovLy9ob21lL2FkbWluL2ljb24tZm9udC90bXAvaWNvbl9qZjA5Z2F4MnRzai9maWxlLWZvbGRlci1maWxsLnN2ZxdiMo4AAAAASUVORK5CYII=)}
+    .fa-file-text-o{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAAASAAAAEgARslrPgAAAl1JREFUSMfFlF9IU1Ecx7+/s83G4Faikg9RMTQTpQd7WduiHu1BcF5cPVhK9geEkbpYQVqBROI2SSFFDSTUhOJOzUgQCQa2HtIewhES7KGXApsZV9Td9JweQhDzsrGMvk+H39/P+f04B/jPou0G+ytv9miex0P3US38nZ2pFhJ9KMRMIkGnMCm+19a+iQefVXQNDSXLM/5BdBYL4lNWFj5QLp4oCr1cn+cBn0+vAL9q+MKmOjroBZ3Bj0RCKMJFj3p6HLLXHaoDkoEY9RywiChiqjo9/XC/PBeL6YU5Ao2rozXLy2hAD28Kh1HP3FTZ2ysUfomeh0LO997Ho0WMTTcGL5dHBwa257P0t7ezIs1+zeWbnBRLWKObssxLMCMs3d3OhoZIyFZauvsA+zCFb6qK2+I0RYJBxzHvgRF5cZHdwoQYHh6mQZTRQkaGaGcn6a3NlvoKUtTesp+GjKcej5proNWK1lZkY36rX+QZC9i9tjZAfN0pPymAI8t3dMwuSVTIjaK4rm67XwVuaIHfZ4N9S+OPbJ3murrg3ojymKrq1U8KsHaYyhPXGdtziFeZrmRmpjqZxIphUOtjzAzAFNWPSwpgGtPKQZrGzlO/6J+d3bTzi1DoCOeRa+2fXScUZcfkc4CjxusbufMXABtkbjI1WyzsrjZG5srKTTuN44KQOAdQAugApKCkAO8OPnjtmo/HAUiA251uIz3t+j+wexNYoSJYJcnprF9Siq3WdBuIFSqAVZJSfoZiAjmUH4/TuKgWflkWMLSwFllO+4rjogoAxHHkUH44/C+nmZZ+Ad6L354mpV4DAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIwLTA5LTAzVDE3OjM1OjU1KzA4OjAwu8wMmgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMC0wOS0wM1QxNzozNTo1NSswODowMMqRtCYAAABMdEVYdHN2ZzpiYXNlLXVyaQBmaWxlOi8vL2hvbWUvYWRtaW4vaWNvbi1mb250L3RtcC9pY29uX2pmMDlnYXgydHNqL2ZpbGUtdGV4dC5zdmeoBi/TAAAAAElFTkSuQmCC)}
+</style>
