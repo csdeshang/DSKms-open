@@ -18,7 +18,8 @@ use think\facade\Db;
  */
 class  Storemoneylog extends BaseModel {
 
-    const TYPE_BILL=1;
+    //订单确认收货
+    const TYPE_ORDER_SUCCESS=1;
     const TYPE_WITHDRAW=2;
     const TYPE_ADMIN=3;
     const TYPE_VERIFY=4;
@@ -26,6 +27,10 @@ class  Storemoneylog extends BaseModel {
     const TYPE_DEPOSIT_IN=6;
     const TYPE_MEMBER_IN=7;
     const TYPE_MEMBER_OUT=8;
+    //店铺参加营销活动费用
+    const TYPE_STORE_COST=9;
+    const TYPE_ORDER_REFUND=10;
+    
     
     const STATE_VALID=1;
     const STATE_WAIT=2;
@@ -111,23 +116,38 @@ class  Storemoneylog extends BaseModel {
         }
         $data['store_name']=$store_info['store_name'];
         $store_data=array();
-        if(isset($data['store_avaliable_money']) && $data['store_avaliable_money']!=0){
-            if($data['store_avaliable_money']<0 && $store_info['store_avaliable_money']<abs($data['store_avaliable_money'])){//检查资金是否充足
+        if(isset($data['storemoneylog_avaliable_money']) && $data['storemoneylog_avaliable_money']!=0){
+            if($data['storemoneylog_avaliable_money']<0 && $store_info['store_avaliable_money']<abs($data['storemoneylog_avaliable_money'])){//检查资金是否充足
                 throw new \think\Exception(lang('ds_store_avaliable_money_is_not_enough'), 10006);
             }
-            $store_data['store_avaliable_money']=bcadd($store_info['store_avaliable_money'],$data['store_avaliable_money'],2);
+            $store_data['store_avaliable_money']=bcadd($store_info['store_avaliable_money'],$data['storemoneylog_avaliable_money'],2);
         }
-        if(isset($data['store_freeze_money']) && $data['store_freeze_money']!=0){
-            if($data['store_freeze_money']<0 && $store_info['store_freeze_money']<abs($data['store_freeze_money'])){//检查资金是否充足
+        if(isset($data['storemoneylog_freeze_money']) && $data['storemoneylog_freeze_money']!=0){
+            if($data['storemoneylog_freeze_money']<0 && $store_info['store_freeze_money']<abs($data['storemoneylog_freeze_money'])){//检查资金是否充足
                 throw new \think\Exception(lang('ds_store_freeze_money_is_not_enough'), 10006);
             }
-            $store_data['store_freeze_money']=bcadd($store_info['store_freeze_money'],$data['store_freeze_money'],2);
+            $store_data['store_freeze_money']=bcadd($store_info['store_freeze_money'],$data['storemoneylog_freeze_money'],2);
         }
         if(!empty($store_data)){
             if(!Db::name('store')->where('store_id',$data['store_id'])->update($store_data)){
                 throw new \think\Exception(lang('ds_store_money_adjust_fail'), 10006);
             }
         }
+        
+        //店铺资金记录 插入最新余额
+        //店铺可用资金
+        if(isset($store_data['store_avaliable_money'])){
+            $data['storemoneylog_avaliable_total_money'] = $store_data['store_avaliable_money'];
+        }else{
+            $data['storemoneylog_avaliable_total_money'] = $store_info['store_avaliable_money'];
+        }
+        //店铺冻结资金
+        if(isset($store_data['store_freeze_money'])){
+            $data['storemoneylog_freeze_total_money'] = $store_data['store_freeze_money'];
+        }else{
+            $data['storemoneylog_freeze_total_money'] = $store_info['store_freeze_money'];
+        }
+        
         $insert=Db::name('storemoneylog')->insertGetId($data);
         if(!$insert){
             throw new \think\Exception(lang('ds_store_money_log_insert_fail'), 10006);

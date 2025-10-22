@@ -26,60 +26,8 @@ class  Store extends BaseModel {
 
     public $page_info;
     
-    /**
-     * 自营机构的ID
-     * @access protected
-     * @author csdeshang
-     * array(
-     *   '机构ID(int)' => '是否绑定了全部商品类目(boolean)',
-     *   // ..
-     * )
-     */
-    protected $ownShopIds;
 
-    /**
-     * 删除缓存自营机构的ID
-     * @access public
-     * @author csdeshang
-     */
-    public function dropCachedOwnShopIds() {
-        $this->ownShopIds = null;
-        dkcache('own_shop_ids');
-    }
 
-    /**
-     * 获取自营机构的ID
-     * @access public
-     * @author csdeshang
-     * @param boolean $bind_all_gc = false 是否只获取绑定全部类目的自营店 默认否（即全部自营店）
-     * @return int
-     */
-    public function getOwnShopIds($bind_all_gc = false) {
-
-        $data = $this->ownShopIds;
-
-        // 属性为空则取缓存
-        if (!$data) {
-            $data = rkcache('own_shop_ids');
-
-            // 缓存为空则查库
-            if (!$data) {
-                $data = array();
-                $all_own_shops = Db::name('store')->field('store_id,bind_all_gc')->where(array('is_platform_store' => 1,))->select()->toArray();
-                foreach ((array) $all_own_shops as $v) {
-                    $data[$v['store_id']] = (int) (bool) $v['bind_all_gc'];
-                }
-
-                // 写入缓存
-                wkcache('own_shop_ids', $data);
-            }
-
-            // 写入属性
-            $this->ownShopIds = $data;
-        }
-
-        return array_keys($bind_all_gc ? array_filter($data) : $data);
-    }
 
     /**
      * 查询机构列表
@@ -561,7 +509,6 @@ class  Store extends BaseModel {
 			$shop_array['store_state'] = 1;
 			$shop_array['store_addtime'] = TIMESTAMP;
 			$shop_array['store_endtime'] = strtotime(date('Y-m-d 23:59:59', strtotime('+1 day')) . " +" . intval($joinin_detail['joinin_year']) . " year");
-			//$shop_array['store_avaliable_deposit']=$joinin_detail['storeclass_bail'];
 			$store_id = $this->addStore($shop_array);
 			if ($store_id) {
 				//记录保证金
@@ -573,7 +520,7 @@ class  Store extends BaseModel {
 							'storedepositlog_type' => Storedepositlog::TYPE_PAY,
 							'storedepositlog_state' => Storedepositlog::STATE_VALID,
 							'storedepositlog_add_time' => TIMESTAMP,
-							'store_avaliable_deposit' => $joinin_detail['storeclass_bail'],
+							'storedepositlog_avaliable_deposit' => $joinin_detail['storeclass_bail'],
 							'storedepositlog_desc' => '机构入驻保证金',
 						));
 

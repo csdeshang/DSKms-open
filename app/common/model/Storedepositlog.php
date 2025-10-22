@@ -111,25 +111,25 @@ class  Storedepositlog extends BaseModel {
         }
         $data['store_name']=$store_info['store_name'];
         $store_data=array();
-        if(isset($data['store_avaliable_deposit']) && $data['store_avaliable_deposit']!=0){
-            if($data['store_avaliable_deposit']<0 && $store_info['store_avaliable_deposit']<abs($data['store_avaliable_deposit'])){//检查资金是否充足
+        if(isset($data['storedepositlog_avaliable_deposit']) && $data['storedepositlog_avaliable_deposit']!=0){
+            if($data['storedepositlog_avaliable_deposit']<0 && $store_info['store_avaliable_deposit']<abs($data['storedepositlog_avaliable_deposit'])){//检查资金是否充足
                 throw new \think\Exception(lang('ds_store_avaliable_deposit_is_not_enough'), 10006);
             }
-            $store_data['store_avaliable_deposit']=bcadd($store_info['store_avaliable_deposit'],$data['store_avaliable_deposit'],2);
+            $store_data['store_avaliable_deposit']=bcadd($store_info['store_avaliable_deposit'],$data['storedepositlog_avaliable_deposit'],2);
         }
         
-        if(isset($data['store_freeze_deposit']) && $data['store_freeze_deposit']!=0){
-            if($data['store_freeze_deposit']<0 && $store_info['store_freeze_deposit']<abs($data['store_freeze_deposit'])){//检查资金是否充足
+        if(isset($data['storedepositlog_freeze_deposit']) && $data['storedepositlog_freeze_deposit']!=0){
+            if($data['storedepositlog_freeze_deposit']<0 && $store_info['store_freeze_deposit']<abs($data['storedepositlog_freeze_deposit'])){//检查资金是否充足
                 throw new \think\Exception(lang('ds_store_freeze_deposit_is_not_enough'), 10006);
             }
-            $store_data['store_freeze_deposit']=bcadd($store_info['store_freeze_deposit'],$data['store_freeze_deposit'],2);
+            $store_data['store_freeze_deposit']=bcadd($store_info['store_freeze_deposit'],$data['storedepositlog_freeze_deposit'],2);
         }
         
-        if(isset($data['store_payable_deposit']) && $data['store_payable_deposit']!=0){
-            if($data['store_payable_deposit']<0 && $store_info['store_payable_deposit']<abs($data['store_payable_deposit'])){//检查资金是否充足
+        if(isset($data['storedepositlog_payable_deposit']) && $data['storedepositlog_payable_deposit']!=0){
+            if($data['storedepositlog_payable_deposit']<0 && $store_info['store_payable_deposit']<abs($data['storedepositlog_payable_deposit'])){//检查资金是否充足
                 throw new \think\Exception(lang('ds_store_payable_deposit_is_not_enough'), 10006);
             }
-            $store_data['store_payable_deposit']=bcadd($store_info['store_payable_deposit'],$data['store_payable_deposit'],2);
+            $store_data['store_payable_deposit']=bcadd($store_info['store_payable_deposit'],$data['storedepositlog_payable_deposit'],2);
         }
 
         if(!empty($store_data)){

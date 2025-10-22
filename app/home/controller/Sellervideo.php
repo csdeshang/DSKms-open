@@ -92,6 +92,38 @@ class Sellervideo extends BaseSeller {
         View::assign('show_page', $videoupload_model->page_info->render());
         echo View::fetch($this->template_dir . 'video_list');
     }
+    
+    /**
+     * 修改视频名称
+     */
+    public function edit_videoupload_name(){
+        $videoupload_model = model('videoupload');
+        $videoupload_id = intval(input('param.videoupload_id'));
+        $condition = array();
+        $condition[] = array('videoupload_id','=',$videoupload_id);
+        $condition[] = array('store_id','=',session('store_id'));
+        $videoupload_info = $videoupload_model->getOneVideoupload($condition);
+        
+        
+        if (request()->isPost()) {
+            $videoupload_name = input('param.videoupload_name');
+            $data = array(
+                'videoupload_name'=>$videoupload_name,
+            );
+            
+            $result = $videoupload_model->editVideoupload($data,$condition);
+            if($result){
+                ds_json_encode(10000,lang('ds_common_op_succ'));
+            }else{
+                ds_json_encode(10000,lang('ds_common_op_fail'));
+            }
+            
+        }else{
+            View::assign('videoupload_info', $videoupload_info);
+            return View::fetch($this->template_dir . 'edit_videoupload_name');
+        }
+        
+    }
 
     /**
      * 获取腾讯客户端上传签名 
@@ -267,7 +299,6 @@ class Sellervideo extends BaseSeller {
         $videoupload_fileid = input('param.file_id');
         $videoupload_name = input('param.file_name');
         $videoupload_url = input('param.url');
-        $videoupload_type = intval(input('param.type'));
         $videoupload_size = intval(input('param.size'));
         $item_id = intval(input('param.item_id'));
         if (empty($video_type)) {
@@ -288,12 +319,10 @@ class Sellervideo extends BaseSeller {
             'videoupload_fileid' => $videoupload_fileid,
             'videoupload_name' => $videoupload_name,
             'videoupload_url' => $videoupload_url,
-            'videoupload_type' => $videoupload_type,
             'videoupload_size' => $videoupload_size,
             'videoupload_time' => TIMESTAMP,
             'item_id' => $item_id,
             'store_id' => session('store_id'),
-            'store_name' => session('store_name'),
         );
         $videoupload_model->addVideoupload($data);
         

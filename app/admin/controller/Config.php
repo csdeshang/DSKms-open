@@ -48,7 +48,6 @@ class  Config extends AdminControl {
             }
             $update_array['goods_verify'] = intval(input('post.goods_verify')) ;//机构课程审核
 			$update_array['goods_all_verify'] = intval(input('post.goods_all_verify')) ;//机构所有课程是否通过审核
-            $update_array['baidu_ak'] = input('post.baidu_ak');
             $update_array['site_name'] = input('post.site_name');
             $update_array['icp_number'] = input('post.icp_number');
             $update_array['wab_number'] = input('post.wab_number');
@@ -276,19 +275,14 @@ class  Config extends AdminControl {
         } else {
             $order_auto_cancel_day = intval(input('post.order_auto_cancel_day'));
             $order_refund_time = intval(input('post.order_refund_time'));
-            $store_bill_cycle = intval(input('post.store_bill_cycle'));
             if($order_auto_cancel_day < 1 || $order_auto_cancel_day>50){
                 $this->error(lang('automatic_confirmation_receipt').'1-50'.lang('numerical'));
             }
             if($order_refund_time < 0 || $order_refund_time>100){
                 $this->error(lang('exchange_code_refunded_automatically').'0-100'.lang('numerical'));
             }
-            if($store_bill_cycle<7){
-                $this->error(lang('store_bill_cycle_error'));
-            }
             $update_array['order_auto_cancel_day'] = $order_auto_cancel_day;
             $update_array['order_refund_time'] = $order_refund_time;
-            $update_array['store_bill_cycle'] = $store_bill_cycle;
             $result = $config_model->editConfig($update_array);
             if ($result) {
                 $this->log(lang('ds_edit').lang('auto_set'),1);

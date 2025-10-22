@@ -29,13 +29,11 @@ class  Payment extends BaseMall {
 
 
     private function use_predeposit($order_info, $post, $virtual = 0) {
-        if ($virtual==1) {
-
+        if ($virtual == 1) {
             $logic_buy = model('buyvirtual', 'logic');
-		} elseif($virtual==2){
-			$logic_buy = model('storejoinin');
+        } elseif ($virtual == 2) {
+            $logic_buy = model('storejoinin');
         } else {
-
             $logic_buy = model('buy_1', 'logic');
         }
         if (empty($post['password'])) {
@@ -53,19 +51,14 @@ class  Payment extends BaseMall {
             $post['pd_pay'] = null;
         }
 
-
+        Db::startTrans();
         try {
-            Db::startTrans();
-
-
             if (!empty($post['rcb_pay'])) {
                 $order_info = $logic_buy->rcbPay($order_info, $post, $buyer_info);
             }
-
             if (!empty($post['pd_pay'])) {
                 $order_info = $logic_buy->pdPay($order_info, $post, $buyer_info);
             }
-
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();

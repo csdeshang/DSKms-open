@@ -122,105 +122,103 @@ class  Wechat extends AdminControl {
         return View::fetch();
     }
     
-    public function add_menu(){
-        $menus=input('param.menus/a');
-        $result='';
-        $menu_list=array();
+    public function add_menu() {
+        $menus = input('param.menus/a');
+        $result = '';
+        $menu_list = array();
         Db::startTrans();
         try {
             $wechat_model = model('wechat');
-            $condition=array(array('id','>',0));
+            $condition = array(array('id', '>', 0));
             $wechat_model->delWxmenu($condition);
-            foreach($menus as $key => $val){
-    
-                    $temp=array();
-                    foreach($val as $k => $v){
-                        if($k!=(count($val)-1)){
-                            $temp[$v['name']]=$v['value'];
+            foreach ($menus as $key => $val) {
+
+                $temp = array();
+                foreach ($val as $k => $v) {
+                    if ($k != (count($val) - 1)) {
+                        $temp[$v['name']] = $v['value'];
+                    }
+                }
+                $id = count($menu_list) + 1;
+                $menu_list[] = array('id' => $id, 'pid' => 0, 'child_count' => isset($val[count($val) - 1]['child']) ? count($val[count($val) - 1]['child']) : 0, 'value' => $temp, 'index1' => $key, 'index2' => -1);
+                if (isset($val[count($val) - 1]['child'])) {
+                    foreach ($val[count($val) - 1]['child'] as $k1 => $v1) {
+                        $temp = array();
+                        foreach ($v1 as $k => $v) {
+                            $temp[$v['name']] = $v['value'];
                         }
+                        $menu_list[] = array('id' => count($menu_list) + 1, 'pid' => $id, 'value' => $temp, 'index1' => $key, 'index2' => $k1);
                     }
-                    $id=count($menu_list)+1;
-                    $menu_list[]=array('id'=>$id,'pid'=>0,'child_count'=>isset($val[count($val)-1]['child'])?count($val[count($val)-1]['child']):0,'value'=>$temp,'index1'=>$key,'index2'=>-1);
-                    if(isset($val[count($val)-1]['child'])){
-                        foreach($val[count($val)-1]['child'] as $k1 => $v1){
-                        $temp=array();
-                        foreach($v1 as $k => $v){
-                            $temp[$v['name']]=$v['value'];
-                        }
-                        $menu_list[]=array('id'=>count($menu_list)+1,'pid'=>$id,'value'=>$temp,'index1'=>$key,'index2'=>$k1);
-                    }
-                    }
+                }
             }
-            $menu_array=array();
-            foreach($menu_list as $val){
-                if(trim($val['value']['name'])==''){
-                    $result=array('index1'=>$val['index1'],'index2'=>$val['index2'],'name'=>'name');
+            $menu_array = array();
+            foreach ($menu_list as $val) {
+                if (trim($val['value']['name']) == '') {
+                    $result = array('index1' => $val['index1'], 'index2' => $val['index2'], 'name' => 'name');
                     throw new \think\Exception('', 10006);
                 }
-                if(isset($val['child_count']) && $val['child_count']>0){
-                    $menu_array[]=array(
-                        'id'=>$val['id'],
-                        'pid'=>$val['pid'],
-                        'name'=>$val['value']['name'],
-                        'type'=>'',
-                        'value'=>''
+                if (isset($val['child_count']) && $val['child_count'] > 0) {
+                    $menu_array[] = array(
+                        'id' => $val['id'],
+                        'pid' => $val['pid'],
+                        'name' => $val['value']['name'],
+                        'type' => '',
+                        'value' => ''
                     );
-                }else{
-                    $temp=array(
-                        'id'=>$val['id'],
-                        'pid'=>$val['pid'],
-                        'name'=>$val['value']['name'],
-                        'type'=>$val['value']['type'],
+                } else {
+                    $temp = array(
+                        'id' => $val['id'],
+                        'pid' => $val['pid'],
+                        'name' => $val['value']['name'],
+                        'type' => $val['value']['type'],
                     );
-                    switch($val['value']['type']){
+                    switch ($val['value']['type']) {
                         case 'article_id':
-                            if(trim($val['value']['article_id'])==''){
-                                $result=array('index1'=>$val['index1'],'index2'=>$val['index2'],'name'=>'article_id');
+                            if (trim($val['value']['article_id']) == '') {
+                                $result = array('index1' => $val['index1'], 'index2' => $val['index2'], 'name' => 'article_id');
                                 throw new \think\Exception('', 10006);
                             }
-                            $temp['value']=json_encode(array('article_id'=>$val['value']['article_id']));
+                            $temp['value'] = json_encode(array('article_id' => $val['value']['article_id']));
                             break;
                         case 'click':
-                            if(trim($val['value']['key'])==''){
-                                $result=array('index1'=>$val['index1'],'index2'=>$val['index2'],'name'=>'key');
+                            if (trim($val['value']['key']) == '') {
+                                $result = array('index1' => $val['index1'], 'index2' => $val['index2'], 'name' => 'key');
                                 throw new \think\Exception('', 10006);
                             }
-                            $temp['value']=json_encode(array('key'=>$val['value']['key']));
+                            $temp['value'] = json_encode(array('key' => $val['value']['key']));
                             break;
                         case 'view':
-                            if(trim($val['value']['url1'])==''){
-                                $result=array('index1'=>$val['index1'],'index2'=>$val['index2'],'name'=>'url1');
+                            if (trim($val['value']['url1']) == '') {
+                                $result = array('index1' => $val['index1'], 'index2' => $val['index2'], 'name' => 'url1');
                                 throw new \think\Exception('', 10006);
                             }
-                            $temp['value']=json_encode(array('url'=>$val['value']['url1']));
+                            $temp['value'] = json_encode(array('url' => $val['value']['url1']));
                             break;
                         case 'miniprogram':
-                            if(trim($val['value']['url2'])=='' || trim($val['value']['appid'])=='' || trim($val['value']['pagepath'])==''){
-                                $result=array('index1'=>$val['index1'],'index2'=>$val['index2'],'name'=>((trim($val['value']['url2'])=='')?'url2':((trim($val['value']['appid'])=='')?'appid':'pagepath')));
+                            if (trim($val['value']['url2']) == '' || trim($val['value']['appid']) == '' || trim($val['value']['pagepath']) == '') {
+                                $result = array('index1' => $val['index1'], 'index2' => $val['index2'], 'name' => ((trim($val['value']['url2']) == '') ? 'url2' : ((trim($val['value']['appid']) == '') ? 'appid' : 'pagepath')));
                                 throw new \think\Exception('', 10006);
                             }
-                            $temp['value']=json_encode(array('url'=>$val['value']['url2'],'appid'=>$val['value']['appid'],'pagepath'=>$val['value']['pagepath']));
+                            $temp['value'] = json_encode(array('url' => $val['value']['url2'], 'appid' => $val['value']['appid'], 'pagepath' => $val['value']['pagepath']));
                             break;
                         default:
-                            $result=array('index1'=>$val['index1'],'index2'=>$val['index2'],'name'=>'type');
+                            $result = array('index1' => $val['index1'], 'index2' => $val['index2'], 'name' => 'type');
                             throw new \think\Exception('', 10006);
                     }
-                    $menu_array[]=$temp;
+                    $menu_array[] = $temp;
                 }
             }
-            if(!empty($menu_array)){
+            if (!empty($menu_array)) {
                 Db::name('wxmenu')->insertAll($menu_array);
             }
+            Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
-            ds_json_encode(10001, $e->getMessage(),$result);
+            ds_json_encode(10001, $e->getMessage(), $result);
         }
-        Db::commit();
+
         ds_json_encode(10000, lang('ds_common_op_succ'));
     }
-
-
-
 
     //更新公众号菜单
     public function pub_menu() {
@@ -495,7 +493,7 @@ class  Wechat extends AdminControl {
             $m_info = model('wechat')->getWxmemberList();
             $openid = '';
             foreach ($m_info as $k => $val) {
-                $openid .= $val['member_wxopenid'] . ',';
+                $openid .= $val['member_h5_wxopenid'] . ',';
             }
             $openid = explode(',', $openid);
             $content = input('param.text');

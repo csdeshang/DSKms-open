@@ -113,17 +113,18 @@ class  Storedeposit extends AdminControl {
                 'storedepositlog_add_time'=>TIMESTAMP,
             );
             if(input('param.verify_state')==1){//通过
-                    $data['store_freeze_deposit']=-$info['store_freeze_deposit'];
+                    $data['storedepositlog_freeze_deposit']=-$info['storedepositlog_freeze_deposit'];
                     $storedepositlog_state=Storedepositlog::STATE_AGREE;
             }else{
-                $data['store_avaliable_deposit']=$info['store_freeze_deposit'];
-                    $data['store_freeze_deposit']=-$info['store_freeze_deposit'];
+                $data['storedepositlog_avaliable_deposit']=$info['storedepositlog_freeze_deposit'];
+                    $data['storedepositlog_freeze_deposit']=-$info['storedepositlog_freeze_deposit'];
                     $storedepositlog_state=Storedepositlog::STATE_REJECT;
             }
             $admininfo = $this->getAdminInfo();
             $data['storedepositlog_desc']=lang('order_admin_operator')."【" . $admininfo['admin_name'] . "】".((input('param.verify_state')==1)?lang('ds_pass'):lang('ds_refuse')).lang('seller_name')."【" . $info['store_name'] . "】".lang('admin_storedeposit_log_stage_cash').'：'.input('param.verify_reason');
+            
+            Db::startTrans();
             try {
-                Db::startTrans();
                 $storedepositlog_model->changeStoredeposit($data);
                 //修提现状态
                 if(!$storedepositlog_model->editStoredepositlog(array('storedepositlog_id'=>$id,'storedepositlog_state'=>Storedepositlog::STATE_WAIT),array('storedepositlog_state'=>$storedepositlog_state))){
@@ -138,7 +139,7 @@ class  Storedeposit extends AdminControl {
                         'storemoneylog_type'=>Storemoneylog::TYPE_DEPOSIT_OUT,
                         'storemoneylog_state'=>Storemoneylog::STATE_VALID,
                         'storemoneylog_add_time'=>TIMESTAMP,
-                        'store_avaliable_money'=>$info['store_freeze_deposit'],
+                        'storemoneylog_avaliable_money'=>$info['storedepositlog_freeze_deposit'],
                         'storemoneylog_desc'=>$data['storedepositlog_desc'],
                     );
                     $storemoneylog_model->changeStoremoney($data2);
@@ -183,17 +184,18 @@ class  Storedeposit extends AdminControl {
                 'storedepositlog_add_time'=>TIMESTAMP,
             );
             if(input('param.verify_state')==1){//通过
-                $data['store_avaliable_deposit']=$info['store_payable_deposit'];
-                    $data['store_payable_deposit']=-$info['store_payable_deposit'];
+                $data['storedepositlog_avaliable_deposit']=$info['storedepositlog_payable_deposit'];
+                    $data['storedepositlog_payable_deposit']=-$info['storedepositlog_payable_deposit'];
                     $storedepositlog_state=Storedepositlog::STATE_PAYED;
             }else{
-                    $data['store_payable_deposit']=-$info['store_payable_deposit'];
+                    $data['storedepositlog_payable_deposit']=-$info['storedepositlog_payable_deposit'];
                     $storedepositlog_state=Storedepositlog::STATE_CANCEL;
             }
             $admininfo = $this->getAdminInfo();
             $data['storedepositlog_desc']=lang('order_admin_operator')."【" . $admininfo['admin_name'] . "】".lang('ds_update').lang('seller_name')."【" . $info['store_name'] . "】".lang('admin_storedeposit_pay_state').((input('param.verify_state')==1)?lang('admin_storedeposit_payed'):lang('admin_storedeposit_cancel')).'：'.input('param.verify_reason');
+            
+            Db::startTrans();
             try {
-                Db::startTrans();
                 $storedepositlog_model->changeStoredeposit($data);
                 //修提现状态
                 if(!$storedepositlog_model->editStoredepositlog(array('storedepositlog_id'=>$id,'storedepositlog_state'=>Storedepositlog::STATE_PAYING),array('storedepositlog_state'=>$storedepositlog_state))){
@@ -272,11 +274,11 @@ class  Storedeposit extends AdminControl {
             );
             switch ($operatetype) {
                 case 1:
-                    $data['store_avaliable_deposit']=$money;
+                    $data['storedepositlog_avaliable_deposit']=$money;
                     $log_msg = lang('order_admin_operator')."【" . $admininfo['admin_name'] . "】".lang('ds_handle').lang('seller_name')."【" . $store_info['store_name'] . "】".lang('ds_store_deposit')."【".lang('admin_storedeposit_artificial_operatetype_add')."】，".lang('admin_storedeposit_price') . $money;
                     break;
                 case 2:
-                    $data['store_avaliable_deposit']=-$money;
+                    $data['storedepositlog_avaliable_deposit']=-$money;
                     $log_msg = lang('order_admin_operator')."【" . $admininfo['admin_name'] . "】".lang('ds_handle').lang('seller_name')."【" . $store_info['store_name'] . "】".lang('ds_store_deposit')."【".lang('admin_storedeposit_artificial_operatetype_reduce')."】，".lang('admin_storedeposit_price') . $money;
                     break;
                 default:
@@ -284,8 +286,9 @@ class  Storedeposit extends AdminControl {
                     break;
             }
             $data['storedepositlog_desc']=$log_msg;
+            
+            Db::startTrans();
             try {
-                Db::startTrans();
                 $storedepositlog_model->changeStoredeposit($data);
                 Db::commit();
                 $this->log($log_msg, 1);

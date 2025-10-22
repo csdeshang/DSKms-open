@@ -1,9 +1,5 @@
 <?php
 $lang['config_business_licence'] = '营业执照';
-$lang['store_bill_cycle'] = '机构结算周期';
-$lang['store_bill_cycle_tips'] = '自动为机构结算的周期，需大于等于7天（因为有7天可退款期）';
-$lang['store_bill_cycle_error'] = '机构结算周期设置错误';
-$lang['store_bill_cycle_required'] = '请填写机构结算周期';
 
 $lang['site_name'] = '网站名称';
 $lang['seller_center_logo'] = '机构中心LOGO';
@@ -163,9 +159,6 @@ $lang['sina_wb_skey'] = '应用密钥';
 $lang['sina_function_fail_tip'] = '该功能需要在  php.ini 中 开启 php_curl 扩展，才能使用。';
 $lang['sina_settings'] = '微博同步登录';
 
-$lang['weixin_isuse'] = '是否启用微信扫码登录功能';
-$lang['weixin_appid'] = '应用标识(appid)';
-$lang['weixin_secret'] = '应用密钥';
 
 $lang['points_isuse'] = '积分';
 $lang['points_isuse_open'] = '开启';

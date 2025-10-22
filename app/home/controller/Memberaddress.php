@@ -60,7 +60,6 @@ class  Memberaddress extends BaseMember {
             $this->setMemberCurMenu('member_address');
             /* 设置买家当前栏目 */
             $this->setMemberCurItem('my_address_add');
-            View::assign('baidu_ak', config('ds_config.baidu_ak'));
             return View::fetch($this->template_dir . 'form');
         } else {
             $address_is_default = input('post.is_default') == 1 ? 1 : 0;
@@ -117,7 +116,6 @@ class  Memberaddress extends BaseMember {
             $this->setMemberCurMenu('member_address');
             /* 设置买家当前栏目 */
             $this->setMemberCurItem('my_address_edit');
-            View::assign('baidu_ak', config('ds_config.baidu_ak'));
             return View::fetch($this->template_dir . 'form');
         } else {
             $address_is_default = input('post.is_default') == 1 ? 1 : 0;

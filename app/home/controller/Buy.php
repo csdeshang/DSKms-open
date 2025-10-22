@@ -89,7 +89,7 @@ class  Buy extends BaseMember {
 		//显示支付接口列表
 		$payment_model = model('payment');
 		$condition = array();
-		$condition[] = array('payment_code','not in',array('offline', 'predeposit'));
+		$condition[] = array('payment_code','not in',array('predeposit'));
 		$condition[] = array('payment_state','=',1);
 		$condition[] = array('payment_platform','=','pc');
 		$payment_list = $payment_model->getPaymentList($condition);
@@ -133,7 +133,7 @@ class  Buy extends BaseMember {
         //显示支付接口列表
         $payment_model = model('payment');
         $condition = array();
-        $condition[] = array('payment_code','not in',array('offline', 'predeposit'));
+        $condition[] = array('payment_code','not in',array('predeposit'));
         $condition[] = array('payment_state','=',1);
         $condition[] = array('payment_platform','=','pc');
         $payment_list = $payment_model->getPaymentList($condition);

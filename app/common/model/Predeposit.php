@@ -29,16 +29,23 @@ class  Predeposit extends BaseModel {
 		'bonus'=>'红包奖励',
     );
     public $lg_type_text=array(
-        'order_pay'=>'下单使用',
+        'order_pay'=>'下单支付',
+        'store_rechargew_pay'=>'店铺充值',
+        'store_withdraw'=>'店铺提现',
         'order_freeze'=>'下单冻结',
         'order_cancel'=>'取消订单解冻',
         'order_comb_pay'=>'下单扣除被冻结',
-        'recharge'=>'平台充值卡充值',
-        'cash_apply'=>'申请提现冻结预存款',
-        'cash_pay'=>'提现成功',
-        'cash_del'=>'取消提现申请',
-        'refund'=>'确认退款',
-        'vr_refund'=>'虚拟兑码退款',
+        'recharge'=>'充值',
+        'refund'=>'退款',
+        'vr_refund'=>'虚拟退款',
+        'cash_apply'=>'申请提现冻结',
+        'cash_pay'=>'提现',
+        'cash_del'=>'取消提现解冻',
+        'sys_add_money'=>'系统增加',
+        'sys_del_money'=>'系统减少',
+        'sys_freeze_money'=>'系统冻结',
+        'sys_unfreeze_money'=>'系统解冻',
+        'order_inviter'=>'订单佣金',
     );
 
     /**
@@ -69,18 +76,16 @@ class  Predeposit extends BaseModel {
         $card['member_id'] = $member_id;
         $card['member_name'] = $member_name;
 
+        Db::startTrans();
         try {
-            Db::startTrans();
-
             $rechargecard_model->setRechargecardUsedById($card['rc_id'], $member_id, $member_name);
-
             $card['amount'] = $card['rc_denomination'];
             $this->changeRcb('recharge', $card);
-
             Db::commit();
-        } catch (Exception $e) {
+            return ds_callback(true, '充值卡增加成功');
+        } catch (\Exception $e) {
             Db::rollback();
-            throw $e;
+            return ds_callback(false, $e->getMessage());
         }
     }
 
@@ -368,6 +373,18 @@ class  Predeposit extends BaseModel {
      * @return type
      */
     public function changePd($change_type, $data = array()) {
+        if (empty($data['member_id']) || intval($data['member_id']) <= 0) {
+            throw new \think\Exception('changePd 方法未传 member_id 系统严重错误');
+        }
+        //获取用户信息【加锁】
+        $member_info = Db::name('member')->field('member_id,available_predeposit,freeze_predeposit')->where('member_id', $data['member_id'])->lock(true)->find();
+        if (empty($member_info)) {
+            throw new \think\Exception('changePd 方法未传 member_id 用户不存在');
+        }
+        if ($data['amount'] <= 0) {
+            throw new \think\Exception('changePd 方法 amount金额错误');
+        }
+
         $data_log = array();
         $data_pd = array();
         $data_msg = array();
@@ -382,7 +399,13 @@ class  Predeposit extends BaseModel {
             case 'order_pay':
                 $data_log['lg_av_amount'] = -$data['amount'];
                 $data_log['lg_desc'] = '下单，支付预存款，订单号: ' . $data['order_sn'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('order_pay 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = -$data['amount'];
                 $data_msg['freeze_amount'] = 0;
@@ -391,8 +414,14 @@ class  Predeposit extends BaseModel {
             case 'store_rechargew_pay':
                 $data_log['lg_av_amount'] = -$data['amount'];
                 $data_log['lg_desc'] = '充值店铺资金，订单号: ' . $data['order_sn'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
-            
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('store_rechargew_pay 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
+
                 $data_msg['av_amount'] = -$data['amount'];
                 $data_msg['freeze_amount'] = 0;
                 $data_msg['desc'] = $data_log['lg_desc'];
@@ -400,8 +429,8 @@ class  Predeposit extends BaseModel {
             case 'store_withdraw':
                 $data_log['lg_av_amount'] = $data['amount'];
                 $data_log['lg_desc'] = '店铺资金提现，订单号: ' . $data['order_sn'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
-            
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
+
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = 0;
                 $data_msg['desc'] = $data_log['lg_desc'];
@@ -410,8 +439,14 @@ class  Predeposit extends BaseModel {
                 $data_log['lg_av_amount'] = -$data['amount'];
                 $data_log['lg_freeze_amount'] = $data['amount'];
                 $data_log['lg_desc'] = '下单，冻结预存款，订单号: ' . $data['order_sn'];
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+'.$data['amount']);
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+' . $data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('order_freeze 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = -$data['amount'];
                 $data_msg['freeze_amount'] = $data['amount'];
@@ -421,8 +456,14 @@ class  Predeposit extends BaseModel {
                 $data_log['lg_av_amount'] = $data['amount'];
                 $data_log['lg_freeze_amount'] = -$data['amount'];
                 $data_log['lg_desc'] = '取消订单，解冻预存款，订单号: ' . $data['order_sn'];
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('order_cancel 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = -$data['amount'];
@@ -431,59 +472,89 @@ class  Predeposit extends BaseModel {
             case 'order_comb_pay':
                 $data_log['lg_freeze_amount'] = -$data['amount'];
                 $data_log['lg_desc'] = '下单，支付被冻结的预存款，订单号: ' . $data['order_sn'];
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('order_comb_pay 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = 0;
                 $data_msg['freeze_amount'] = $data['amount'];
                 $data_msg['desc'] = $data_log['lg_desc'];
                 break;
-			
-			case 'storejoinin_pay':
-				$data_log['lg_av_amount'] = -$data['amount'];
-				$data_log['lg_desc'] = '机构入驻，支付预存款，订单号: ' . $data['order_sn'];
-				$data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
 
-				$data_msg['av_amount'] = -$data['amount'];
-				$data_msg['freeze_amount'] = 0;
-				$data_msg['desc'] = $data_log['lg_desc'];
-				break;
-			case 'storejoinin_freeze':
-				$data_log['lg_av_amount'] = -$data['amount'];
-				$data_log['lg_freeze_amount'] = $data['amount'];
-				$data_log['lg_desc'] = '机构入驻，冻结预存款，订单号: ' . $data['order_sn'];
-				$data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+'.$data['amount']);
-				$data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
+            case 'storejoinin_pay':
+                $data_log['lg_av_amount'] = -$data['amount'];
+                $data_log['lg_desc'] = '机构入驻，支付预存款，订单号: ' . $data['order_sn'];
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('storejoinin_pay 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
 
-				$data_msg['av_amount'] = -$data['amount'];
-				$data_msg['freeze_amount'] = $data['amount'];
-				$data_msg['desc'] = $data_log['lg_desc'];
-				break;
-			case 'storejoinin_cancel':
-				$data_log['lg_av_amount'] = $data['amount'];
-				$data_log['lg_freeze_amount'] = -$data['amount'];
-				$data_log['lg_desc'] = '取消机构入驻，解冻预存款，订单号: ' . $data['order_sn'];
-				$data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
-				$data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
+                $data_msg['av_amount'] = -$data['amount'];
+                $data_msg['freeze_amount'] = 0;
+                $data_msg['desc'] = $data_log['lg_desc'];
+                break;
+            case 'storejoinin_freeze':
+                $data_log['lg_av_amount'] = -$data['amount'];
+                $data_log['lg_freeze_amount'] = $data['amount'];
+                $data_log['lg_desc'] = '机构入驻，冻结预存款，订单号: ' . $data['order_sn'];
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+' . $data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('storejoinin_freeze 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
 
-				$data_msg['av_amount'] = $data['amount'];
-				$data_msg['freeze_amount'] = -$data['amount'];
-				$data_msg['desc'] = $data_log['lg_desc'];
-				break;
-			case 'storejoinin_comb_pay':
-				$data_log['lg_freeze_amount'] = -$data['amount'];
-				$data_log['lg_desc'] = '机构入驻，支付被冻结的预存款，订单号: ' . $data['order_sn'];
-				$data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
+                $data_msg['av_amount'] = -$data['amount'];
+                $data_msg['freeze_amount'] = $data['amount'];
+                $data_msg['desc'] = $data_log['lg_desc'];
+                break;
+            case 'storejoinin_cancel':
+                $data_log['lg_av_amount'] = $data['amount'];
+                $data_log['lg_freeze_amount'] = -$data['amount'];
+                $data_log['lg_desc'] = '取消机构入驻，解冻预存款，订单号: ' . $data['order_sn'];
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('storejoinin_cancel 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
 
-				$data_msg['av_amount'] = 0;
-				$data_msg['freeze_amount'] = -$data['amount'];
-				$data_msg['desc'] = $data_log['lg_desc'];
-				break;
-			
+                $data_msg['av_amount'] = $data['amount'];
+                $data_msg['freeze_amount'] = -$data['amount'];
+                $data_msg['desc'] = $data_log['lg_desc'];
+                break;
+            case 'storejoinin_comb_pay':
+                $data_log['lg_freeze_amount'] = -$data['amount'];
+                $data_log['lg_desc'] = '机构入驻，支付被冻结的预存款，订单号: ' . $data['order_sn'];
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('storejoinin_comb_pay 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
+
+                $data_msg['av_amount'] = 0;
+                $data_msg['freeze_amount'] = -$data['amount'];
+                $data_msg['desc'] = $data_log['lg_desc'];
+                break;
+
             case 'recharge':
                 $data_log['lg_av_amount'] = $data['amount'];
                 $data_log['lg_desc'] = '充值，充值单号: ' . $data['pdr_sn'];
                 $data_log['lg_admin_name'] = isset($data['admin_name']) ? $data['admin_name'] : '会员' . $data['member_name'] . '在线充值';
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = 0;
@@ -492,7 +563,7 @@ class  Predeposit extends BaseModel {
             case 'vr_refund':
                 $data_log['lg_av_amount'] = $data['amount'];
                 $data_log['lg_desc'] = '虚拟兑码退款成功，订单号: ' . $data['order_sn'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = 0;
@@ -502,8 +573,14 @@ class  Predeposit extends BaseModel {
                 $data_log['lg_av_amount'] = -$data['amount'];
                 $data_log['lg_freeze_amount'] = $data['amount'];
                 $data_log['lg_desc'] = '申请提现，冻结预存款，提现单号: ' . $data['order_sn'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('cash_apply 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = -$data['amount'];
                 $data_msg['freeze_amount'] = $data['amount'];
@@ -513,7 +590,13 @@ class  Predeposit extends BaseModel {
                 $data_log['lg_freeze_amount'] = -$data['amount'];
                 $data_log['lg_desc'] = '提现成功，提现单号: ' . $data['order_sn'];
                 $data_log['lg_admin_name'] = $data['admin_name'];
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('cash_pay 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = 0;
                 $data_msg['freeze_amount'] = -$data['amount'];
@@ -524,8 +607,14 @@ class  Predeposit extends BaseModel {
                 $data_log['lg_freeze_amount'] = -$data['amount'];
                 $data_log['lg_desc'] = '取消提现申请，解冻预存款，提现单号: ' . $data['order_sn'];
                 $data_log['lg_admin_name'] = $data['admin_name'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('cash_del 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = -$data['amount'];
@@ -533,9 +622,9 @@ class  Predeposit extends BaseModel {
                 break;
             case 'sys_add_money':
                 $data_log['lg_av_amount'] = $data['amount'];
-                $data_log['lg_desc'] = '管理员调节预存款【增加】，充值单号: ' . $data['pdr_sn'].',备注：'.$data['lg_desc'];
+                $data_log['lg_desc'] = '管理员调节预存款【增加】，充值单号: ' . $data['pdr_sn'] . ',备注：' . $data['lg_desc'];
                 $data_log['lg_admin_name'] = $data['admin_name'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = 0;
@@ -543,9 +632,15 @@ class  Predeposit extends BaseModel {
                 break;
             case 'sys_del_money':
                 $data_log['lg_av_amount'] = -$data['amount'];
-                $data_log['lg_desc'] = '管理员调节预存款【减少】，充值单号: ' . $data['pdr_sn'].',备注：'.$data['lg_desc'];
+                $data_log['lg_desc'] = '管理员调节预存款【减少】，充值单号: ' . $data['pdr_sn'] . ',备注：' . $data['lg_desc'];
                 $data_log['lg_admin_name'] = $data['admin_name'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('sys_del_money 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = -$data['amount'];
                 $data_msg['freeze_amount'] = 0;
@@ -554,10 +649,16 @@ class  Predeposit extends BaseModel {
             case 'sys_freeze_money':
                 $data_log['lg_av_amount'] = -$data['amount'];
                 $data_log['lg_freeze_amount'] = $data['amount'];
-                $data_log['lg_desc'] = '管理员调节预存款【冻结】，充值单号: ' . $data['pdr_sn'].',备注：'.$data['lg_desc'];
+                $data_log['lg_desc'] = '管理员调节预存款【冻结】，充值单号: ' . $data['pdr_sn'] . ',备注：' . $data['lg_desc'];
                 $data_log['lg_admin_name'] = $data['admin_name'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit-'.$data['amount']);
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+'.$data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['available_predeposit']){
+                    throw new \think\Exception('sys_freeze_money 用户金额不足');
+                }
+                
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit-' . $data['amount']);
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = -$data['amount'];
                 $data_msg['freeze_amount'] = $data['amount'];
@@ -566,10 +667,16 @@ class  Predeposit extends BaseModel {
             case 'sys_unfreeze_money':
                 $data_log['lg_av_amount'] = $data['amount'];
                 $data_log['lg_freeze_amount'] = -$data['amount'];
-                $data_log['lg_desc'] = '管理员调节预存款【解冻】，充值单号: ' . $data['pdr_sn'].',备注：'.$data['lg_desc'];
+                $data_log['lg_desc'] = '管理员调节预存款【解冻】，充值单号: ' . $data['pdr_sn'] . ',备注：' . $data['lg_desc'];
                 $data_log['lg_admin_name'] = $data['admin_name'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
-                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-'.$data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
+                
+                //判断是否有充足金额
+                if($data['amount'] > $member_info['freeze_predeposit']){
+                    throw new \think\Exception('sys_unfreeze_money 用户金额不足');
+                }
+                
+                $data_pd['freeze_predeposit'] = Db::raw('freeze_predeposit-' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = -$data['amount'];
@@ -578,7 +685,7 @@ class  Predeposit extends BaseModel {
             case 'order_inviter':
                 $data_log['lg_av_amount'] = $data['amount'];
                 $data_log['lg_desc'] = $data['lg_desc'];
-                $data_pd['available_predeposit'] = Db::raw('available_predeposit+'.$data['amount']);
+                $data_pd['available_predeposit'] = Db::raw('available_predeposit+' . $data['amount']);
 
                 $data_msg['av_amount'] = $data['amount'];
                 $data_msg['freeze_amount'] = 0;
@@ -588,18 +695,30 @@ class  Predeposit extends BaseModel {
             //end
 
             default:
-                throw new \think\Exception('参数错误', 10006);
+                throw new \think\Exception('预存款更新参数错误', 10006);
                 break;
         }
-
-        $update = model('member')->editMember(array('member_id' => $data['member_id']), $data_pd,$data['member_id']);
+        
+        //更新总金额
+        if(isset($data_log['lg_av_amount'])){
+            $data_log['lg_av_total_amount'] = $member_info['available_predeposit'] + $data_log['lg_av_amount'];
+        }else{
+            $data_log['lg_av_total_amount'] = $member_info['available_predeposit'];
+        }
+        if(isset($data_log['lg_freeze_amount'])){
+            $data_log['lg_freeze_total_amount'] = $member_info['freeze_predeposit'] + $data_log['lg_freeze_amount'];
+        }else{
+            $data_log['lg_freeze_total_amount'] = $member_info['freeze_predeposit'];
+        }
+        
+        $update = model('member')->editMember(array('member_id' => $data['member_id']), $data_pd, $data['member_id']);
 
         if (!$update) {
-            throw new \think\Exception('操作失败', 10006);
+            throw new \think\Exception('预存款更新异常', 10006);
         }
         $insert = Db::name('pdlog')->insertGetId($data_log);
         if (!$insert) {
-            throw new \think\Exception('操作失败', 10006);
+            throw new \think\Exception('新增预存款记录异常', 10006);
         }
 
         // 支付成功发送买家消息
@@ -609,31 +728,31 @@ class  Predeposit extends BaseModel {
         $data_msg['av_amount'] = ds_price_format($data_msg['av_amount']);
         $data_msg['freeze_amount'] = ds_price_format($data_msg['freeze_amount']);
         $message['ali_param'] = $data_msg;
-        $message['ten_param'] = array($data_msg['time'],$data_msg['desc'],$data_msg['av_amount'],$data_msg['freeze_amount']);
-        $data_msg['pd_url'] = HOME_SITE_URL .'/Predeposit/pd_log_list';
+        $message['ten_param'] = array($data_msg['time'], $data_msg['desc'], $data_msg['av_amount'], $data_msg['freeze_amount']);
+        $data_msg['pd_url'] = HOME_SITE_URL . '/Predeposit/pd_log_list';
         $message['param'] = $data_msg;
-        $message['weixin_param']=array(
-                    'url' => config('ds_config.h5_site_url').'/pages/member/predeposit/PredepositList',
-                    'data'=>array(
-                        "keyword1" => array(
-                            "value" => isset($this->lg_type_text[$change_type])?$this->lg_type_text[$change_type]:$change_type,
-                            "color" => "#333"
-                        ),
-                        "keyword2" => array(
-                            "value" => $data['amount'],
-                            "color" => "#333"
-                        ),
-                        "keyword3" => array(
-                            "value" => date('Y-m-d H:i'),
-                            "color" => "#333"
-                        ),
-                        "keyword4" => array(
-                            "value" => $data_msg['av_amount'],
-                            "color" => "#333"
-                        )
-                    ),
-                );
-        model('cron')->addCron(array('cron_exetime'=>TIMESTAMP,'cron_type'=>'sendMemberMsg','cron_value'=>serialize($message)));
+        $message['weixin_param'] = array(
+            'url' => config('ds_config.h5_site_url') . '/pages/member/predeposit/PredepositList',
+            'data' => array(
+                "keyword1" => array(
+                    "value" => isset($this->lg_type_text[$change_type]) ? $this->lg_type_text[$change_type] : $change_type,
+                    "color" => "#333"
+                ),
+                "keyword2" => array(
+                    "value" => $data['amount'],
+                    "color" => "#333"
+                ),
+                "keyword3" => array(
+                    "value" => date('Y-m-d H:i'),
+                    "color" => "#333"
+                ),
+                "keyword4" => array(
+                    "value" => $data_msg['av_amount'],
+                    "color" => "#333"
+                )
+            ),
+        );
+        model('cron')->addCron(array('cron_exetime' => TIMESTAMP, 'cron_type' => 'sendMemberMsg', 'cron_value' => serialize($message)));
         return $insert;
     }
 

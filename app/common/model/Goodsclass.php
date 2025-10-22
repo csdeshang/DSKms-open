@@ -263,9 +263,6 @@ class  Goodsclass extends BaseModel
     {
         // 读取商品分类
         $gc_list_o = $gc_list = $this->getGoodsclassListByParentId($pid);
-        // 如果不是自营机构或者自营机构未绑定全部商品类目，读取绑定分类
-
-        if (!check_platform_store_bindingall_goodsclass()) {
             $gc_list = array_under_reset($gc_list, 'gc_id');
             $storebindclass_model = model('storebindclass');
             $gcid_array = $storebindclass_model->getStorebindclassList(array(array('store_id' ,'=', $store_id), array('storebindclass_state','in', array(1, 2)),), '', "class_{$deep} asc", "distinct class_{$deep}");
@@ -284,7 +281,6 @@ class  Goodsclass extends BaseModel
             else {
                 return array();
             }
-        }
 
         return $gc_list;
     }

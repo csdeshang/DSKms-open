@@ -76,10 +76,6 @@ class  Search extends BaseMall {
             $condition[] = array('goods_name|goods_advword','like','%' . $keyword . '%');
         }
 
-        $type = intval(input('param.type'));
-        if ($type == 1) {
-            $condition[] = array('is_platform_store','=',1);
-        }
         $priceMin = intval(input('param.priceMin'));
         if ($priceMin > 0) {
             $condition[] = array('goods_price','>=',$priceMin);

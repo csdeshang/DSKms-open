@@ -47,7 +47,6 @@ $lang['ds_storegrade'] = '机构等级';
 $lang['ds_storeclass'] = '机构分类';
 $lang['ds_storehelp'] = '机构帮助';
 $lang['ds_storejoin'] = '开店首页';
-$lang['ds_ownshop'] = '自营机构';
 //交易
 $lang['ds_trade'] = '交易';
 $lang['ds_order'] = '实物订单';
@@ -55,12 +54,9 @@ $lang['ds_vrorder'] = '虚拟订单';
 $lang['ds_refund'] = '退款管理';
 $lang['ds_return'] = '退货管理';
 $lang['ds_vrrefund'] = '虚拟订单退款';
-$lang['ds_bill_manage'] = '订单结算';
-$lang['ds_vrbill_manage'] = '虚拟订单结算';
 $lang['ds_consulting'] = '咨询管理';
 $lang['ds_inform'] = '举报管理';
 $lang['ds_evaluate'] = '评价管理';
-$lang['ds_bill'] = '结算管理';
 //问卷考试
 
 

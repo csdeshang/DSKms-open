@@ -17,7 +17,7 @@ use think\facade\Db;
  * ============================================================================
  * 控制器
  */
-class  Sellersetting extends BaseSeller {
+class Sellersetting extends BaseSeller {
 
     const MAX_MB_SLIDERS = 5;
 
@@ -65,7 +65,7 @@ class  Sellersetting extends BaseSeller {
                 $store = $store_model->getStoreInfo(array('store_name' => input('param.store_name')));
                 //机构名存在,则提示错误
                 if (!empty($store) && ($store_id != $store['store_id'])) {
-                    $this->error(lang('please_change_another_name'));
+                    ds_json_encode(10001, lang('please_change_another_name'));
                 }
                 $param['store_name'] = input('post.store_name');
             }
@@ -77,10 +77,15 @@ class  Sellersetting extends BaseSeller {
                 $update['store_name'] = input('param.store_name');
                 Db::name('goods')->where($condition)->update($update);
             }
+            
+            $store_validate = ds_validate('store');
+            if (!$store_validate->scene('seller_setting')->check($param)) {
+                ds_json_encode(10001, $store_validate->getError());
+            }
 
             $this->getMiniProCode(1);
             $store_model->editStore($param, array('store_id' => $store_id));
-            $this->success(lang('ds_common_save_succ'), url('Sellersetting/setting'));
+            ds_json_encode(10000, lang('ds_common_save_succ'));
         }
         /**
          * 实例化机构等级模型
@@ -303,10 +308,6 @@ class  Sellersetting extends BaseSeller {
             'curr_image' => $curr_image
         );
 
-        // 自营店全部可用
-        if (check_platform_store()) {
-            $themes = array_keys($style_data);
-        } else {
             /**
              * 机构等级
              */
@@ -317,7 +318,7 @@ class  Sellersetting extends BaseSeller {
              * 可用主题
              */
             $themes = explode('|', $grade['storegrade_template']);
-        }
+            
         $theme_list = array();
         /**
          * 可用主题预览图片
@@ -438,9 +439,9 @@ class  Sellersetting extends BaseSeller {
             echo json_encode(array(
                 'success' => true,
             ));
-        } catch (\Exception $ex) {
+        } catch (\Exception $e) {
             echo json_encode(array(
-                'success' => false, 'error' => $ex->getMessage(),
+                'success' => false, 'error' => $e->getMessage(),
             ));
         }
     }
@@ -591,7 +592,6 @@ class  Sellersetting extends BaseSeller {
             ds_json_encode(10000,lang('save_success'));
         }
         View::assign('store_info', $store_info);
-        View::assign('baidu_ak', config('ds_config.baidu_ak'));
         return View::fetch($this->template_dir . 'map');
     }
 
@@ -604,21 +604,22 @@ class  Sellersetting extends BaseSeller {
      */
     protected function getSellerItemList() {
         $menu_array = array(
-            1 => array(
+            array(
                 'name' => 'store_setting', 'text' => lang('ds_member_path_store_config'),
                 'url' => url('Sellersetting/setting')
             ),
-            2 => array(
+            array(
                 'name' => 'store_map', 'text' => lang('ds_member_path_store_map'),
                 'url' => url('Sellersetting/map')
             ),
-            4 => array(
+            array(
                 'name' => 'store_slide', 'text' => lang('ds_member_path_store_slide'),
                 'url' => url('Sellersetting/store_slide')
-            ), 5 => array(
+            ),
+            array(
                 'name' => 'store_theme', 'text' => lang('store_theme'), 'url' => url('Sellersetting/theme')
             ),
-            7 => array(
+            array(
                 'name' => 'store_mobile', 'text' => lang('mobile_phone_store_settings'), 'url' => url('Sellersetting/store_mobile'),
             ),
         );

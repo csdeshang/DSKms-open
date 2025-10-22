@@ -481,11 +481,6 @@ class Dashboard extends AdminControl {
         $pointsorder_model = model('pointorder');
         $condition = array(array('point_orderstate','in', array(11, 20)));
         $statistics['points_order'] = $pointsorder_model->getPointorderCount($condition);
-        //待审核账单
-        $bill_model = model('bill');
-        $statistics['check_billno'] = $bill_model->getOrderbillCount(array('ob_state' => BILL_STATE_STORE_COFIRM));
-        //待支付账单
-        $statistics['pay_billno'] = $bill_model->getOrderbillCount(array('ob_state' => BILL_STATE_STORE_COFIRM));
         // 平台客服
         $statistics['mall_consult'] = model('mallconsult')->getMallconsultCount(array('mallconsult_isreply' => 0));
 

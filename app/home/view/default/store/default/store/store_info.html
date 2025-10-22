@@ -1,6 +1,6 @@
 <div class="dss-info">
     <div class="title">
-        <h4>{if $store_info.is_platform_store}<em>{$Think.lang.platform_store}</em>{else}<img src="{$Think.HOME_SITE_ROOT}/images/store_grade/{$store_info.grade_id}.png" class="pngFix">{/if}&nbsp;<a href="{:url('Store/index',['store_id'=>$store_info.store_id])}" >{$store_info.store_name}</a>
+        <h4><img src="{$Think.HOME_SITE_ROOT}/images/store_grade/{$store_info.grade_id}.png" class="pngFix">&nbsp;<a href="{:url('Store/index',['store_id'=>$store_info.store_id])}" >{$store_info.store_name}</a>
         <span member_id="{$store_info.member_id}"></span>
         {if isset($store_info['member_id']) || !empty($store_info.store_qq) || !empty($store_info.store_ww)}
                 {notempty name="store_info.store_qq"}
@@ -59,14 +59,8 @@
         <dl>
             <dt><span class="t_adjust">{$Think.lang.business_licence_number_electronic}</span><span>：</span></dt>
             <dd>
-                {if !$store_info.is_platform_store}
                 {if $store_info.business_licence_number_electronic}
                 <a href="{$store_info.business_licence_number_electronic}" target="_blank">{$Think.lang.ds_view}</a>
-                {/if}
-                {else}
-                {if $Think.config.ds_config.business_licence}
-                <a href="{:ds_get_pic(ATTACH_COMMON,$Think.config.ds_config.business_licence)}" target="_blank">{$Think.lang.ds_view}</a>
-                {/if}
                 {/if}
             </dd>
         </dl>
@@ -75,11 +69,6 @@
                 <a href="javascript:collect_store('{$store_info.store_id}','count','store_collect')" ><i class="iconfont">&#xe6e4;</i>{$Think.lang.ds_collect}</a>
             </div>
             <div class="shop_btn">
-                {if $store_info.store_longitude != ""}
-                <div class="dss-info-btn-map iconfont">&#xe720;
-                    <div class="dss-info-map" id="map_container" style="width:208px;height:208px;"></div>
-                </div>
-                {/if}
                 <div class="dss-info-btn-qrcode iconfont" >&#xe72d;
                     <div class="dss-info-qrcode"><img src="{:store_qrcode($store_info.store_id)}" title="{$Think.lang.shop_primitive}{:url('Store/goods_all',['store_id'=>$store_info.store_id])}" style="width:208px;height:208px"></div>
                 </div>
@@ -95,35 +84,5 @@
     var cityName = "{$store_info.store_address}";
     var address = "{$store_info.area_info}";
     var store_name = "{$store_info.store_company_name}";
-    var store_longitude = "{$store_info.store_longitude}";
-    var store_latitude = "{$store_info.store_latitude}"
-    function initialize() {
-        var map = new BMap.Map("map_container");          // 创建地图实例
-        if(store_longitude != "" && store_latitude != ""){
-                    var point = new BMap.Point(store_longitude,store_latitude);  // 创建点坐标
-                    map.centerAndZoom(point, 15);
-                    map.enableScrollWheelZoom(true);
-                    map.clearOverlays(); 
-                    var new_point = new BMap.Point(store_longitude,store_latitude);
-                    var marker = new BMap.Marker(new_point);
-                    map.addOverlay(marker);
-                    map.panTo(new_point);
-		}
-    }
 
-    function loadScript() {
-        var script = document.createElement("script");
-        script.src = "{$Think.HTTP_TYPE}api.map.baidu.com/api?v=2.0&callback=initialize";
-        document.body.appendChild(script);
-    }
-
-    // 当鼠标放在机构地图上再加载百度地图。
-    $(function(){
-        $('.dss-info-btn-map').one('mouseover',function(){
-            loadScript();
-        });
-        $('.dss-info-btn-map').one('click',function(){
-            loadScript();
-        });
-    });
 </script>

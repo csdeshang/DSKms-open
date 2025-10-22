@@ -89,7 +89,7 @@ class  Memberevaluate
             $evaluate_goods_info['geval_goodsprice'] = $value['goods_price'];
             $evaluate_goods_info['geval_goodsimage'] = $value['goods_image'];
             $evaluate_goods_info['geval_scores'] = $evaluate_score;
-            $evaluate_goods_info['geval_content'] = removeEmojis($evaluate_comment);
+            $evaluate_goods_info['geval_content'] = $evaluate_comment;
             $evaluate_goods_info['geval_isanonymous'] = input('post.anony') ? 1 : 0;
             $evaluate_goods_info['geval_addtime'] = TIMESTAMP;
             $evaluate_goods_info['geval_storeid'] = $store_info['store_id'];

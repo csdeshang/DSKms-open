@@ -123,11 +123,12 @@ class InstantMessage extends AdminControl {
                     if (!$res['code']) {
                         throw new \think\Exception($res['msg'], 10006);
                     }
-                } catch (\Exception $ex) {
+                    Db::commit();
+                } catch (\Exception $e) {
                     Db::rollback();
                     ds_json_encode(10001, $e->getMessage());
                 }
-                Db::commit();
+                
             }
         }
 

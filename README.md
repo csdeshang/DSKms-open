@@ -1,15 +1,28 @@
+## 相关产品
+
+### DSPlatform系统
+DSPlatform系统是一个集成的解决方案，基于Thinkphp8 + Vue3 + Element Plus + Uniapp 开发，系统支持多种商业模式，包括传统商城购物、外卖配送、上门服务、上门家政、短视频带货等，满足不同行业的业务需求。无论是电商平台、本地生活服务、家政服务还是内容电商，都能快速构建完整的业务体系。
+- [DSPlatform帮助手册](http://help.dsplatform.csdeshang.com/) http://help.dsplatform.csdeshang.com/
+
+### DSMall商城系统
+DSMall商城系统是基于ThinkPhp6.0和Uniapp开发的一套完善的B2B2C（多店铺商城）电商系统。它能够快速积累客户和会员数据，进行智能转化，提升销售和会员维护效率。主要功能包括拼团、砍价、秒杀、优惠券、积分、分销、刮刮卡等，适合企业进行二次开发。
+
+### DSO2O外卖系统
+DSO2O外卖系统专为餐饮行业设计，基于ThinkPhp6.0和Uniapp开发，支持线上点餐和线下配送。系统提供用户友好的界面，方便顾客快速下单，同时支持商家管理订单和配送。该系统还集成了实时数据分析功能，帮助商家优化运营策略。
+
+---
+
+
 ## DSKMS介绍
 DSKMS系统是基于ThinkPhp6.0+Uniapp开发的一套完善的内容(视频\文章)付费系统,功能包含 外加打赏、限时特价、 店铺会员可以免费听所有课程、以及分销功能
 
-## 导航栏目
- [帮助手册](http://www.csdeshang.com/home/help/index/id/143.html)
- | [功能清单](http://www.csdeshang.com/home/dskms/feature.html)
- | [官网地址](http://www.csdeshang.com)
- | [TP6开发手册](https://www.kancloud.cn/manual/thinkphp6_0/1037479)
- | [Vue.js手册](https://cn.vuejs.org/)
+## DSKMS导航栏目
+- [帮助手册](http://doc.csdeshang.com) http://doc.csdeshang.com
+- [功能清单](http://www.csdeshang.com/home/dskms/feature.html) http://www.csdeshang.com/home/dskms/feature.html
+- [官网地址](http://www.csdeshang.com) http://www.csdeshang.com
 
 ## QQ交流群
-DSKMS开源商城官方群:553212556  <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=792e214cbbda512d80ffcaf306f0f92bc69f21ef2bd8096e0d52c733b8e5499a"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="DSCMS开源官方群2" title="DSCMS开源官方群2"></a>
+DSKMS开源商城官方群:553212556 
 
 ## 演示Demo
 | 演示角色  | 演示地址                                | 账号 | 账号 |

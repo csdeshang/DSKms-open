@@ -25,7 +25,6 @@
                     </strong>
                 </dd>
             </dl>
-            {if !session('is_platform_store')}
             <div class="detail-rate">
                 <h5> <strong>{$Think.lang.store_dynamic_evaluation}{$Think.lang.ds_colon}</strong> {$Think.lang.compared_industry} </h5>
                 <ul>
@@ -34,7 +33,6 @@
                     {/foreach}
                 </ul>
             </div>
-            {/if}
         </div>
     </div>
     <div class="seller-cont">
@@ -94,18 +92,6 @@
                 </dl>
             </div>
         </div>
-        <div class="container type-a">
-            <div class="hd">
-                <i class="iconfont">&#xe649;</i>
-                <h3>{$Think.lang.store_business}</h3>
-                <h5>{$Think.lang.store_business_info}</h5>
-            </div>
-            <div class="content">
-                <ul>
-                    <li><a href="{:url('Sellerbill/index',['bill_state'=>'1'])}"> {$Think.lang.bill_confirmed}<strong id="ds_bill_confirm"></strong></a></li>
-                </ul>
-            </div>
-        </div>
         <div class="container type-c h500">
             <div class="hd">
                 <i class="iconfont">&#xe6a3;</i>
@@ -155,7 +141,7 @@
                     <dd class="right-info">
                         <p class="p-name">
                             <a href="{:url('Sellervoucher/templatelist')}">{$Think.lang.store_voucher}</a>
-                            <em>({if session('is_platform_store') || !empty($voucherquota_info)}{$Think.lang.store_open}{else/}{$Think.lang.store_not_open}{/if})</em>
+                            <em>({if !empty($voucherquota_info)}{$Think.lang.store_open}{else/}{$Think.lang.store_not_open}{/if})</em>
                         </p>
                         <p class="p-info">{$Think.lang.store_voucher_info}</p>
                         {notempty name="voucherquota_info"}

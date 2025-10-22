@@ -42,12 +42,12 @@ class  Vrrefund extends BaseModel {
         }
         $refund_array['refund_sn'] = $this->getVrrefundSn($refund_array['store_id']);
 
+        Db::startTrans();
         try {
-            Db::startTrans();
             $refund_id = Db::name('vrrefund')->insertGetId($refund_array);
             Db::commit();
             return $refund_id;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Db::rollback();
             return false;
         }
@@ -61,122 +61,44 @@ class  Vrrefund extends BaseModel {
      * @return boolean
      */
     public function editVrorderRefund($refund) {
+
         $refund_id = $refund['refund_id'];
         $vrorder_model = model('vrorder');
-        
+
         $order_id = $refund['order_id']; //订单编号
         $order = $vrorder_model->getVrorderInfo(array('order_id' => $order_id));
-		
-		//生成out_request_no 支付宝部分退款必传唯一的标识一次退款请求号
+
+        //生成out_request_no 支付宝部分退款必传唯一的标识一次退款请求号
         $order['out_request_no'] = $order['order_sn'];
 
         //订单总金额，单次支付包含多个店铺订单的总金额（针对于微信退款原路返回需要传订单总金额）
         $order['total_order_amount'] = 0;
         $order_array = $vrorder_model->getVrOrderList(array('trade_no' => $order['trade_no']));
-        foreach ($order_array as $key => $value){
+        foreach ($order_array as $key => $value) {
             $order['total_order_amount'] += $vrorder_model->getVrorderInfo(array('order_id' => $value['order_id']), 'order_amount')['order_amount'];
         }
-		
-        $order_amount = $order['order_amount']; //订单金额
-        $rcb_amount = $order['rcb_amount']; //充值卡支付金额
-        $pd_amount = $order['pd_amount']; //预存款支付金额
-        $predeposit_amount = $order_amount - $order['refund_amount'] - $rcb_amount; //可退预存款金额
-        
-        
-        $not_trade_refund = TRUE; //在线支付 不原路返还
-        $alipay_payment_list = array('alipay', 'alipay_app', 'alipay_h5');
-        $wxpay_payment_list = array('wxpay_app', 'wxpay_h5', 'wxpay_jsapi', 'wxpay_minipro', 'wxpay_native');
 
-        //未使用预存款支付 以及  充值卡支付的订单 才支持订单原路返还。
-        if ($refund['admin_state'] == '2' && $predeposit_amount > 0 && (in_array($order['payment_code'], $alipay_payment_list) || in_array($order['payment_code'], $wxpay_payment_list)) && $rcb_amount == 0 && $pd_amount == 0) {
-            if (in_array($order['payment_code'], $alipay_payment_list)) {
-                $payment_code = 'alipay';
-            }
-            if (in_array($order['payment_code'], $wxpay_payment_list)) {
-                $payment_code = 'wxpay_native';
-            }
-            //调用支付接口处理原路退款
-            $logic_payment = model('payment', 'logic');
-            $result = $logic_payment->getPaymentInfo($payment_code);
-            if (!$result['code']) {
-                return FALSE;
-            }
-            $payment_info = $result['data'];
-
-            //支付宝/微信 未开启原路返回
-            if (($payment_code == 'alipay' && $payment_info['payment_config']['alipay_trade_refund_state'] == 1) || ($payment_code == 'wxpay_native' && $payment_info['payment_config']['wx_trade_refund_state'] == 1)) {
-                $result = $logic_payment->getPaymentInfo($order['payment_code']);
-                if (!$result['code']) {
-                    throw new \think\Exception($order['payment_code'] . '支付方法未开启', 10006);
-                }
-                $payment_info = $result['data'];
-                //原路返还金额
-                $trade_refund_amount = $refund['refund_amount']; //退预存款金额
-                if ($refund['refund_amount'] > $predeposit_amount) {
-                    $trade_refund_amount = $predeposit_amount;
-                }
-
-                $payment_api = new $payment_code($payment_info);
-                $result = $payment_api->trade_refund($order, $trade_refund_amount);
-                if (!$result['code']) {
-                    return FALSE;
-                }
-                $not_trade_refund = FALSE;
-            }
-        }
-        
+        Db::startTrans();
         try {
-            Db::startTrans();
-            $state = $this->editVrrefund(array('refund_id' => $refund_id), $refund); ////更新退款
-            if ($state && $refund['admin_state'] == '2') {//审核状态:1为待审核,2为同意,3为不同意
 
-                $predeposit_model = model('predeposit');
-                if (($rcb_amount > 0) && ($refund['refund_amount'] > $predeposit_amount)  && $not_trade_refund) {//退充值卡
-                    $log_array = array();
-                    $log_array['member_id'] = $order['buyer_id'];
-                    $log_array['member_name'] = $order['buyer_name'];
-                    $log_array['order_sn'] = $order['order_sn'];
-                    $log_array['amount'] = $refund['refund_amount'];
-                    if ($predeposit_amount > 0) {
-                        $log_array['amount'] = $refund['refund_amount'] - $predeposit_amount;
-                    }
-                    $state = $predeposit_model->changeRcb('vr_refund', $log_array); //增加买家可用充值卡金额
-                }
-                if ($predeposit_amount > 0  && $not_trade_refund) {//退预存款
-                    $log_array = array();
-                    $log_array['member_id'] = $order['buyer_id'];
-                    $log_array['member_name'] = $order['buyer_name'];
-                    $log_array['order_sn'] = $order['order_sn'];
-                    $log_array['amount'] = $refund['refund_amount']; //退预存款金额
-                    if ($refund['refund_amount'] > $predeposit_amount) {
-                        $log_array['amount'] = $predeposit_amount;
-                    }
-                    $state = $predeposit_model->changePd('vr_refund', $log_array); //增加买家可用预存款金额
-                }
-                if ($state) {
-                    $order_array = array();
-                    $order_amount = $order['order_amount']; //订单金额
-                    $refund_amount = $order['refund_amount'] + $refund['refund_amount']; //退款金额
-                    $order_array['refund_state'] = ($order_amount - $refund_amount) > 0 ? 1 : 2;
-                    $order_array['refund_amount'] = ds_price_format($refund_amount);
-                    $state = $vrorder_model->editVrorder($order_array, array('order_id' => $order_id)); //更新订单退款
-                    //修改分销佣金
-                    $condition=array();
-                    $condition[]=array('orderinviter_order_id','=',$order_id);
-                    $condition[]=array('orderinviter_valid','=',0);
-                    $condition[]=array('orderinviter_order_type','=',1);
-                    $orderinviter_list=Db::name('orderinviter')->where($condition)->select()->toArray();
-                    foreach($orderinviter_list as $orderinviter_info){
-                        $orderinviter_goods_amount=round($order_amount-$refund_amount,2);
-                        $orderinviter_money=round($orderinviter_info['orderinviter_ratio']/100*$orderinviter_goods_amount,2);
-                        Db::name('orderinviter')->where(array(array('orderinviter_id','=',$orderinviter_info['orderinviter_id'])))->update(['orderinviter_goods_amount' => $orderinviter_goods_amount,'orderinviter_money'=>$orderinviter_money]);
-                    }
-                    
-                }
-            }
+            //对店铺资金进行扣款
+            $logic_order = model('vrorder', 'logic');
+            $logic_order->balanceVrOrderStateRefund($order, $refund);
+
+            $refundreturn_model = model('refundreturn');
+            $refundreturn_model->refundAmount($order, $order['order_amount'], 'vrorder');
+
+            $order_array = array();
+            $order_amount = $order['order_amount']; //订单金额
+            $refund_amount = $order['refund_amount'] + $refund['refund_amount']; //退款金额
+            $order_array['refund_state'] = ($order_amount - $refund_amount) > 0 ? 1 : 2;
+            $order_array['refund_amount'] = ds_price_format($refund_amount);
+
+            $state = $vrorder_model->editVrorder($order_array, array('order_id' => $order_id)); //更新订单退款
+
             Db::commit();
             return $state;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Db::rollback();
             return false;
         }
@@ -234,6 +156,9 @@ class  Vrrefund extends BaseModel {
             $result = Db::name('vrrefund')->field($field)->where($condition)->order($order)->limit($limit)->select()->toArray();
         }
         
+        foreach ($result as $key => $vrrefund) {
+            $result[$key]['admin_state_desc'] = get_vrrefund_admin_state($vrrefund['admin_state']);
+        }
         
         return $result;
     }
@@ -302,29 +227,11 @@ class  Vrrefund extends BaseModel {
      */
     public function getOneVrrefund($condition){
         $refund = Db::name('vrrefund')->where($condition)->find();
+        if(!empty($refund)){
+            $refund['admin_state_desc'] = get_vrrefund_admin_state($refund['admin_state']);
+        }
         return $refund;
     }
 
-    /**
-     * 向模板页面输出退款状态
-     * @access public
-     * @author csdeshang
-     * @param type $type 类型
-     * @return string
-     */
-    public function getRefundStateArray($type = 'all') {
-        $admin_array = array(
-            '1' => '待审核',
-            '2' => '同意',
-            '3' => '不同意'
-        ); //退款状态:1为待审核,2为同意,3为不同意
-
-        $state_data = array(
-            'admin' => $admin_array
-        );
-        if ($type == 'all')
-            return $state_data; //返回所有
-        return $state_data[$type];
-    }
 
 }

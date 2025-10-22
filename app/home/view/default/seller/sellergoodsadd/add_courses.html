@@ -190,7 +190,6 @@
                                             file_name:fileInfo.name,
                                             size:fileInfo.size,
                                             url: data.result.name,
-                                            type: "{$Request.param.type}",
                                             item_id: "{$Request.param.item_id}"
                                         })
                                     } else {
@@ -362,7 +361,6 @@
                         size:fileInfo.size,
                         file_id: doneResult.fileId,
                         url: doneResult.video.url,
-                        type: "{$Request.param.type}",
                         item_id: "{$Request.param.item_id}"
                     })
                 }).catch(function (err) {
@@ -478,7 +476,6 @@
             save_video({
                     video_type: 'link',
                     url: url,
-                    type: "{$Request.param.type}",
                     item_id: "{$Request.param.item_id}"
                 })
         }
@@ -573,7 +570,6 @@
                 file_name:fileInfo.name,
                 size:fileInfo.size,
                 url: uploadInfo.object,
-                type: "{$Request.param.type}",
                 item_id: "{$Request.param.item_id}"
             })
         },

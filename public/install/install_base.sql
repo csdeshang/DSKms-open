@@ -687,7 +687,7 @@ CREATE TABLE IF NOT EXISTS `#__inviterclass` (
   `inviterclass_name` varchar(60) NOT NULL COMMENT '等级名',
   `inviterclass_amount` decimal(10,2) NOT NULL COMMENT '等级门槛',
   PRIMARY KEY (`inviterclass_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='推广等级表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='推广等级表';
 
 DROP TABLE IF EXISTS `#__invoice`;
 CREATE TABLE IF NOT EXISTS `#__invoice` (
@@ -832,31 +832,21 @@ CREATE TABLE IF NOT EXISTS `#__marketmanagelog` (
   KEY `member_id` (`member_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='营销活动活动领取记录';
 
-DROP TABLE IF EXISTS `#__mbsellertoken`;
-CREATE TABLE IF NOT EXISTS `#__mbsellertoken` (
-  `seller_token_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '令牌编号',
-  `seller_id` int(10) unsigned NOT NULL COMMENT '用户编号',
-  `seller_name` varchar(50) NOT NULL COMMENT '用户名',
-  `seller_token` varchar(50) NOT NULL COMMENT '登录令牌',
-  `seller_logintime` int(10) unsigned NOT NULL COMMENT '登录时间',
-  `seller_clienttype` varchar(10) NOT NULL COMMENT '客户端类型 windows',
-  PRIMARY KEY (`seller_token_id`),
-  KEY `seller_token` (`seller_token`),
-  KEY `seller_id` (`seller_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='客户端机构登录令牌表';
-
-DROP TABLE IF EXISTS `#__mbusertoken`;
-CREATE TABLE IF NOT EXISTS `#__mbusertoken` (
-  `member_token_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '令牌编号',
-  `member_id` int(10) unsigned NOT NULL COMMENT '用户编号',
-  `member_name` varchar(50) NOT NULL COMMENT '用户名',
-  `member_token` varchar(50) NOT NULL COMMENT '登录令牌',
-  `member_logintime` int(10) unsigned NOT NULL COMMENT '登录时间',
-  `member_clienttype` varchar(10) NOT NULL COMMENT '客户端类型 android wap',
-  `member_openid` varchar(50) DEFAULT NULL COMMENT '微信支付jsapi的openid缓存',
-  PRIMARY KEY (`member_token_id`),
-  KEY `member_id` (`member_id`),
-  KEY `member_token` (`member_token`)
+DROP TABLE IF EXISTS `#__platformtoken`;
+CREATE TABLE IF NOT EXISTS `#__platformtoken` (
+  `platformtoken_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '令牌编号',
+  `platform_userid` int(10) unsigned NOT NULL COMMENT '用户编号',
+  `platform_username` varchar(50) NOT NULL COMMENT '用户名',
+  `platform_token` char(32) NOT NULL COMMENT '登录令牌',
+  `platform_type` char(12) NOT NULL COMMENT '用户类型 member seller chain distributor fuwu',
+  `platform_logintime` int(10) unsigned NOT NULL COMMENT '登录时间',
+  `platform_operationtime` int(10) unsigned NOT NULL COMMENT '最近活跃时间',
+  `platform_clienttype` varchar(10) NOT NULL DEFAULT '' COMMENT '客户端访问类型 APP H5 weixin 小程序',
+  `platform_devicetype` varchar(20) NOT NULL DEFAULT '' COMMENT '客户端设备类型及系统',
+  `platform_openid` varchar(50) DEFAULT NULL COMMENT '微信支付jsapi的openid缓存',
+  PRIMARY KEY (`platformtoken_id`),
+  KEY `platform_userid` (`platform_userid`),
+  KEY `platform_token` (`platform_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='移动端登录令牌表';
 
 DROP TABLE IF EXISTS `#__member`;
@@ -891,9 +881,12 @@ CREATE TABLE IF NOT EXISTS `#__member` (
   `member_qqinfo` text COMMENT 'qq账号相关信息',
   `member_sinaopenid` varchar(100) DEFAULT NULL COMMENT '新浪微博登录id',
   `member_sinainfo` text COMMENT '新浪账号相关信息序列化值',
-  `member_wxopenid` varchar(100) DEFAULT '' COMMENT '微信互联openid',
-  `member_wxunionid` varchar(100) DEFAULT '' COMMENT '微信用户统一标识',
-  `member_wxinfo` text COMMENT '微信用户相关信息',
+  `member_pc_wxopenid` char(30) DEFAULT '' COMMENT 'PC微信互联openid',
+  `member_h5_wxopenid` char(30) DEFAULT '' COMMENT 'H5微信互联openid',
+  `member_mini_wxopenid` char(30) DEFAULT '' COMMENT '小程序微信互联openid',
+  `member_app_wxopenid` char(30) DEFAULT '' COMMENT 'APP微信互联openid',
+  `member_wxunionid` char(100) DEFAULT '' COMMENT '微信用户统一标识',
+  `member_wxnickname` char(100) DEFAULT '' COMMENT '微信用户昵称',
   `member_points` int(11) NOT NULL DEFAULT '0' COMMENT '会员积分',
   `available_predeposit` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '预存款可用金额',
   `freeze_predeposit` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '预存款冻结金额',
@@ -1025,28 +1018,6 @@ CREATE TABLE IF NOT EXISTS `#__navigation` (
   PRIMARY KEY (`nav_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='页面导航表';
 
-DROP TABLE IF EXISTS `#__orderbill`;
-CREATE TABLE IF NOT EXISTS `#__orderbill` (
-  `ob_no` int(11) NOT NULL AUTO_INCREMENT COMMENT '结算单编号(年月机构ID)',
-  `ob_startdate` int(11) NOT NULL COMMENT '开始日期',
-  `ob_enddate` int(11) NOT NULL COMMENT '结束日期',
-  `ob_vr_order_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟订单金额',
-  `ob_vr_order_return_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟订单退款金额',
-  `ob_vr_commis_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟佣金金额',
-  `ob_vr_commis_return_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟退还佣金金额',
-  `ob_vr_inviter_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟分销佣金金额',
-  `ob_store_cost_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '机构促销活动费用',
-  `ob_result_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '应结金额',
-  `ob_createdate` int(11) DEFAULT '0' COMMENT '生成结算单日期',
-  `ob_state` enum('1','2','3','4') DEFAULT '1' COMMENT '结算状态 1，默认2，店家已确认3，平台已审核4，结算完成',
-  `ob_store_id` int(11) NOT NULL COMMENT '机构ID',
-  `ob_store_name` varchar(50) DEFAULT NULL COMMENT '机构名',
-  `ob_inviter_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '分销的佣金',
-  `ob_seller_content` varchar(255) NOT NULL DEFAULT '' COMMENT '机构备注',
-  `ob_admin_content` varchar(255) NOT NULL DEFAULT '' COMMENT '管理员备注',
-  PRIMARY KEY (`ob_no`),
-  KEY `ob_store_id` (`ob_store_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='结算表';
 
 DROP TABLE IF EXISTS `#__orderinviter`;
 CREATE TABLE IF NOT EXISTS `#__orderinviter` (
@@ -1072,20 +1043,20 @@ CREATE TABLE IF NOT EXISTS `#__orderinviter` (
   KEY `orderinviter_member_id` (`orderinviter_member_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='分销详情表';
 
-DROP TABLE IF EXISTS `#__orderstatis`;
-CREATE TABLE IF NOT EXISTS `#__orderstatis` (
-  `os_month` mediumint(9) unsigned NOT NULL DEFAULT '0' COMMENT '统计编号(年月)',
-  `os_store_costtotals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '机构促销活动费用',
-  `os_vr_order_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟订单金额',
-  `os_vr_order_return_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟订单退款金额',
-  `os_vr_commis_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟佣金金额',
-  `os_vr_commis_return_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟退还佣金金额',
-  `os_vr_inviter_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '虚拟分销佣金金额',
-  `os_result_totals` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '本期应结',
-  `os_createdate` int(11) DEFAULT NULL COMMENT '创建记录日期',
-  `os_inviter_totals` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '分销佣金',
-  PRIMARY KEY (`os_month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='月销量统计表';
+
+DROP TABLE IF EXISTS `#__orderlog`;
+CREATE TABLE IF NOT EXISTS `#__orderlog` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '订单记录自增ID',
+  `order_id` int(11) NOT NULL COMMENT '订单id',
+  `log_msg` varchar(150) DEFAULT '' COMMENT '订单记录文字描述',
+  `log_time` int(10) unsigned NOT NULL COMMENT '订单记录处理时间',
+  `log_role` char(5) NOT NULL COMMENT '操作角色',
+  `log_user` varchar(30) DEFAULT '' COMMENT '操作人',
+  `log_type` char(10) NOT NULL DEFAULT 'order' COMMENT 'order普通订单 vrorder虚拟订单 fuwu服务订单 errand跑腿订单',
+  PRIMARY KEY (`log_id`),
+  KEY `order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单记录表';
+
 
 DROP TABLE IF EXISTS `#__payment`;
 CREATE TABLE IF NOT EXISTS `#__payment` (
@@ -1126,7 +1097,9 @@ CREATE TABLE IF NOT EXISTS `#__pdlog` (
   `lg_admin_name` varchar(50) DEFAULT NULL COMMENT '管理员名称',
   `lg_type` varchar(50) NOT NULL DEFAULT '' COMMENT 'order_pay下单支付预存款,order_freeze下单冻结预存款,order_cancel取消订单解冻预存款,order_comb_pay下单支付被冻结的预存款,recharge充值,cash_apply申请提现冻结预存款,cash_pay提现成功,cash_del取消提现申请，解冻预存款,refund退款',
   `lg_av_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '可用金额变更0:未变更',
+  `lg_av_total_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '可用金额总金额(总额)',
   `lg_freeze_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '冻结金额变更0:未变更',
+  `lg_freeze_total_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '冻结金额总金额(总额)',
   `lg_addtime` int(11) NOT NULL COMMENT '变更添加时间',
   `lg_desc` varchar(150) DEFAULT NULL COMMENT '变更描述',
   PRIMARY KEY (`lg_id`),
@@ -1516,7 +1489,6 @@ CREATE TABLE IF NOT EXISTS `#__store` (
   `store_latitude` varchar(20) DEFAULT '' COMMENT '纬度',
   `mb_title_img` varchar(150) DEFAULT NULL COMMENT '手机机构背景图',
   `mb_sliders` text COMMENT '手机机构轮播图',
-  `store_bill_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '上一期结算时间',
   `store_avaliable_deposit` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '机构已缴保证金',
   `store_freeze_deposit` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '机构审核保证金',
   `store_payable_deposit` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '机构应缴保证金',
@@ -1573,9 +1545,9 @@ CREATE TABLE IF NOT EXISTS `#__storedepositlog` (
   `storedepositlog_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '保证金日志id',
   `store_id` int(10) unsigned NOT NULL COMMENT '店铺id',
   `store_name` varchar(60) NOT NULL COMMENT '店铺名称',
-  `store_avaliable_deposit` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '已缴保证金',
-  `store_freeze_deposit` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '审核保证金',
-  `store_payable_deposit` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '应缴保证金',
+  `storedepositlog_avaliable_deposit` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '已缴保证金',
+  `storedepositlog_freeze_deposit` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '审核保证金',
+  `storedepositlog_payable_deposit` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '应缴保证金',
   `storedepositlog_state` tinyint(1) unsigned NOT NULL COMMENT '状态（0无效1有效2待审核3已同意4已拒绝5已缴纳6已取消）',
   `storedepositlog_type` smallint(5) unsigned NOT NULL COMMENT '日志类型',
   `storedepositlog_desc` varchar(255) NOT NULL COMMENT '日志详情',
@@ -1675,8 +1647,10 @@ CREATE TABLE IF NOT EXISTS `#__storemoneylog` (
   `storemoneylog_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '金额日志id',
   `store_id` int(10) unsigned NOT NULL COMMENT '店铺id',
   `store_name` varchar(60) NOT NULL COMMENT '店铺名称',
-  `store_avaliable_money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '变动可用金额',
-  `store_freeze_money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '变动冻结金额',
+  `storemoneylog_avaliable_money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '变动可用金额',
+  `storemoneylog_avaliable_total_money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '余额(可用)',
+  `storemoneylog_freeze_money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '变动冻结金额',
+  `storemoneylog_freeze_total_money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '余额(冻结)',
   `storemoneylog_type` smallint(5) unsigned NOT NULL COMMENT '日志类型',
   `storemoneylog_desc` varchar(255) NOT NULL COMMENT '日志详情',
   `storemoneylog_state` tinyint(1) unsigned NOT NULL COMMENT '状态（0无效1有效2待审核3已同意4已拒绝）',
@@ -1832,14 +1806,13 @@ DROP TABLE IF EXISTS `#__videoupload`;
 CREATE TABLE IF NOT EXISTS `#__videoupload` (
   `videoupload_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '上传视频自增ID',
   `videoupload_fileid` varchar(100) DEFAULT NULL COMMENT '上传视频识别ID',
-  `videoupload_url` text COMMENT '上传视频地址',
-  `videoupload_name` varchar(255) DEFAULT NULL COMMENT '视频名称',
+  `videoupload_url` varchar(255) DEFAULT NULL COMMENT '上传视频地址',
+  `videoupload_name` varchar(100) DEFAULT NULL COMMENT '视频名称',
   `videoupload_state` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '视频申请状态(0申请中1已通过2已拒绝)',
   `videoupload_size` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '上传视频大小',
-  `videoupload_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '上传视频类别 0:无 1:后台文章图片 2:帮助内容图片 3:机构幻灯片 4:会员协议图片 5:积分礼品切换图片 6:积分礼品内容图片',
   `videoupload_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '上传视频添加时间',
+  `videoupload_remark` varchar(60) NOT NULL DEFAULT '' COMMENT '上传视频备注',
   `store_id` int(11) unsigned NOT NULL COMMENT '卖家机构ID',
-  `store_name` varchar(50) NOT NULL COMMENT '卖家机构名称',
   `item_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '信息ID',
   `video_type` varchar(10) DEFAULT 'tencent' COMMENT '视频类型',
   PRIMARY KEY (`videoupload_id`)
@@ -1956,10 +1929,9 @@ CREATE TABLE IF NOT EXISTS `#__vrorder` (
   `promotions_id` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '促销活动ID（抢购ID/限时折扣ID/优惠套装ID）与goods_type搭配使用',
   `commis_rate` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '佣金比例',
   `gc_id` mediumint(9) DEFAULT '0' COMMENT '商品最底级分类ID',
-  `order_from` tinyint(4) NOT NULL DEFAULT '1' COMMENT '订单来源 1:PC 2:手机',
+  `order_from` char(15) DEFAULT '' COMMENT '订单来源',
   `evaluation_state` tinyint(4) NOT NULL DEFAULT '0' COMMENT '评价状态 0:默认 1:已评价 2:禁止评价',
   `evaluation_time` int(11) NOT NULL DEFAULT '0' COMMENT '评价时间',
-  `ob_no` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '相关结算单号',
   PRIMARY KEY (`order_id`),
   KEY `store_id` (`store_id`),
   KEY `buyer_id` (`buyer_id`)
@@ -2134,6 +2106,7 @@ INSERT INTO `#__config` (`id`, `code`, `value`, `remark`) VALUES
 (54, 'email_id', '', '身份验证用户名'),
 (55, 'email_pass', '', '用户名密码'),
 (56, 'email_secure', '', '邮箱发送协议'),
+(59, 'site_uniqid', '', '系统标识'),
 (60, 'setup_date', '2015-01-01 00:00:00', '安装时间'),
 (61, 'upload_type', 'local', '图片上传保存方式'),
 (62, 'alioss_accessid', NULL, 'accessid'),
@@ -2144,22 +2117,35 @@ INSERT INTO `#__config` (`id`, `code`, `value`, `remark`) VALUES
 (67, 'upload_video_type', 'local', '视频上传保存方式'),
 (92, 'order_auto_cancel_day', '3', '自动取消订单的天数'),
 (93, 'order_refund_time', '1', '申请退款的有效天数,确认收货后不可申请退款'),
+(94, 'malbum_max_sum', '10', '个人相册数量'),
+(95, 'hot_search', '', '热门搜索关键字'),
+(96, 'image_allow_ext', 'gif,jpg,jpeg,bmp,png,swf', '允许后缀'),
+(97, 'image_max_filesize', '1024', '允许上传最大值'),
+
 (101, 'qq_isuse', '1', '是否使用QQ互联'),
 (102, 'qq_appid', '', 'qq互联id'),
 (103, 'qq_appkey', '', 'qq秘钥'),
 (111, 'sina_isuse', '1', '是的使用微博登录'),
 (112, 'sina_wb_akey', '', '新浪id'),
 (113, 'sina_wb_skey', '', '新浪秘钥'),
-(121, 'sms_register', '0', '是否手机注册'),
-(122, 'sms_login', '0', '是否手机登录'),
-(123, 'sms_password', '0', '是否手机找回密码'),
-(131, 'weixin_isuse', NULL, '是否微信登录'),
-(132, 'weixin_appid', NULL, '微信appid'),
-(133, 'weixin_secret', NULL, '微信appserite'),
-(136, 'malbum_max_sum', '10', '个人相册数量'),
-(137, 'hot_search', '', '热门搜索关键字'),
-(138, 'image_allow_ext', 'gif,jpg,jpeg,bmp,png,swf', '允许后缀'),
-(139, 'image_max_filesize', '1024', '允许上传最大值'),
+
+(121, 'weixin_pc_isuse', '', '是否微信PC登录'),
+(122, 'weixin_pc_appid', '', '网站应用appid'),
+(123, 'weixin_pc_secret', '', '网站应用appserite'),
+(124, 'weixin_h5_isuse', '', '是否微信公众号登录'),
+(125, 'weixin_h5_appid', '', '公众号appid'),
+(126, 'weixin_h5_secret', '', '公众号appserite'),
+(127, 'weixin_xcx_isuse', '', '是否微信小程序登录'),
+(128, 'weixin_xcx_appid', '', '小程序appid'),
+(129, 'weixin_xcx_secret', '', '小程序appserite'),
+(130, 'weixin_app_isuse', '', '是否微信APP登录'),
+(131, 'weixin_app_appid', '', '移动应用appid'),
+(132, 'weixin_app_secret', '', '移动应用appserite'),
+
+(141, 'sms_register', '0', '是否手机注册'),
+(142, 'sms_login', '0', '是否手机登录'),
+(143, 'sms_password', '0', '是否手机找回密码'),
+
 (150, 'vod_tencent_secret_id', '', '腾讯Secret_id'),
 (151, 'vod_tencent_secret_key', '', '腾讯Secret_key'),
 (202, 'promotion_allow', '1', '商品促销'),
@@ -2190,7 +2176,6 @@ INSERT INTO `#__config` (`id`, `code`, `value`, `remark`) VALUES
 (702, 'inviter_ratio_1', '30', '会员一级推广佣金比例'),
 (703, 'inviter_ratio_2', '25', '会员二级推广佣金比例'),
 (704, 'inviter_ratio_3', '15', '会员三级推广佣金比例'),
-(705, 'baidu_ak', '22bb7221fc279a484895afcc6a0bb33a', '百度地图AK密钥'),
 (706 ,  'inviter_open',  '1',  '推广开关'), 
 (707 ,  'inviter_level',  '3',  '推广级别'), 
 (708 ,  'inviter_show',  '1',  '详情页显示推广佣金'), 
@@ -2198,11 +2183,9 @@ INSERT INTO `#__config` (`id`, `code`, `value`, `remark`) VALUES
 (710 ,  'inviter_view',  '0',  '推广员审核'),
 (711 ,  'inviter_condition',  '0',  '推广员条件'), 
 (712 ,  'inviter_condition_amount',  '0',  '成为推广员的消费门槛'),
-(713 ,  'store_bill_cycle',  '7',  '机构结算周期（天）'),
 (714 ,  'store_withdraw_cycle',  '1',  '机构提现周期（天）'), 
 (715 ,  'store_withdraw_min',  '100',  '机构最小提现金额（元）'),
 (716 ,  'store_withdraw_max',  '10000',  '机构最大提现金额（元）'),
-(717 ,  'auto_register',  '0',  '自动注册'),
 (718 ,  'business_licence',  '',  '营业执照'),
 (719 ,  'member_auth',  '0',  '实名认证'),
 (729 ,  'h5_store_site_url',  'https://uniapp.store.dskms.csdeshang.com',  '手机端店铺地址'),
@@ -2294,8 +2277,10 @@ INSERT INTO `#__consulttype` (`consulttype_id`, `consulttype_name`, `consulttype
 (3, '发票及保修', '后台->交易->咨询管理->咨询类型->编辑', 3),
 (4, '促销及赠品', '后台->交易->咨询管理->咨询类型->编辑', 4);
 
-INSERT INTO `#__document` (`document_id`, `document_code`, `document_title`, `document_content`, `document_time`) VALUES (1, 'agreement', '用户服务协议', '&lt;p&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;本协议是您与网站所有者（以下简称为&amp;quot;商城&amp;quot;）之间就商城网站服务等相关事宜所订立的契约，请您仔细阅读本注册协议，您点击&amp;quot;同意并继续&amp;quot;按钮后，本协议即构成对双方有约束力的法律文件。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第1条 本站服务条款的确认和接纳&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;1.1本站的各项电子服务的所有权和运作权归商城所有。用户同意所有注册协议条款并完成注册程序，才能成为本站的正式用户。用户确认：本协议条款是处理双方权利义务的契约，始终有效，法律另有强制性规定或双方另有特别约定的，依其规定。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;1.2用户点击同意本协议的，即视为用户确认自己具有享受本站服务、下单购物等相应的权利能力和行为能力，能够独立承担法律责任。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;1.3如果您在18周岁以下，您只能在父母或监护人的监护参与下才能使用本站。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;1.4商城保留在中华人民共和国大陆地区法施行之法律允许的范围内独自决定拒绝服务、关闭用户账户、清除或编辑内容或取消订单的权利。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第2条 本站服务&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;2.1商城通过互联网依法为用户提供互联网信息等服务，用户在完全同意本协议及本站规定的情况下，方有权使用本站的相关服务。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;2.2用户必须自行准备如下设备和承担如下开支：（1）上网设备，包括并不限于电脑或者其他上网终端、调制解调器及其他必备的上网装置；（2）上网开支，包括并不限于网络接入费、上网设备租用费、手机流量费等。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第3条 用户信息&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;3.1用户应自行诚信向本站提供注册资料，用户同意其提供的注册资料真实、准确、完整、合法有效，用户注册资料如有变动的，应及时更新其注册资料。如果用户提供的注册资料不合法、不真实、不准确、不详尽的，用户需承担因此引起的相应责任及后果，并且商城保留终止用户使用商城各项服务的权利。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;3.2用户在本站进行浏览、下单购物等活动时，涉及用户真实姓名/名称、通信地址、联系电话、电子邮箱等隐私信息的，本站将予以严格保密，除非得到用户的授权或法律另有规定，本站不会向外界披露用户隐私信息。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;3.3用户注册成功后，将产生用户名和密码等账户信息，您可以根据本站规定改变您的密码。用户应谨慎合理的保存、使用其用户名和密码。用户若发现任何非法使用用户账号或存在安全漏洞的情况，请立即通知本站并向公安机关报案。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;3.4用户同意，商城拥有通过邮件、短信电话等形式，向在本站注册、购物用户、收货人发送订单信息、促销活动等告知信息的权利。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;3.5用户不得将在本站注册获得的账户借给他人使用，否则用户应承担由此产生的全部责任，并与实际使用人承担连带责任。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;3.6用户同意，商城有权使用用户的注册信息、用户名、密码等信息，登录进入用户的注册账户，进行证据保全，包括但不限于公证、见证等。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第4条 用户依法言行义务&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;本协议依据国家相关法律法规规章制定，用户同意严格遵守以下义务：&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（1）不得传输或发表：煽动抗拒、破坏宪法和法律、行政法规实施的言论，煽动颠覆国家政权，推翻社会主义制度的言论，煽动分裂国家、破坏国家统一的的言论，煽动民族仇恨、民族歧视、破坏民族团结的言论；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（2）从中国大陆向境外传输资料信息时必须符合中国有关法规；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（3）不得利用本站从事洗钱、窃取商业秘密、窃取个人信息等违法犯罪活动；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（4）不得干扰本站的正常运转，不得侵入本站及国家计算机信息系统；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（5）不得传输或发表任何违法犯罪的、骚扰性的、中伤他人的、辱骂性的、恐吓性的、伤害性的、庸俗的，淫秽的、不文明的等信息资料；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（6）不得传输或发表损害国家社会公共利益和涉及国家安全的信息资料或言论；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（7）不得教唆他人从事本条所禁止的行为；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（8）不得利用在本站注册的账户进行牟利性经营活动；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;（9）不得发布任何侵犯他人著作权、商标权等知识产权或合法权利的内容；&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;用户应不时关注并遵守本站不时公布或修改的各类合法规则规定。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;本站保有删除站内各类不符合法律政策或不真实的信息内容而无须通知用户的权利。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;若用户未遵守以上规定的，本站有权作出独立判断并采取暂停或关闭用户帐号等措施。用户须对自己在网上的言论和行为承担法律责任。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第5条 商品信息&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;本站上的商品价格、数量、是否有货等商品信息随时都有可能发生变动，本站不作特别通知。由于网站上商品信息的数量极其庞大，虽然本站会尽最大努力保证您所浏览商品信息的准确性，但由于众所周知的互联网技术因素等客观原因存在，本站网页显示的信息可能会有一定的滞后性或差错，对此情形您知悉并理解；商城欢迎纠错，并会视情况给予纠错者一定的奖励。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;为表述便利，商品和服务简称为&amp;quot;商品&amp;quot;或&amp;quot;货物&amp;quot;。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第6条 订单&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;6.1除法律另有强制性规定外，双方约定如下：本站上销售方展示的商品和价格等信息仅仅是交易信息的发布，您下单时须填写您希望购买的商品数量、价款及支付方式、收货人、联系方式、收货地址等内容；系统生成的订单信息是计算机信息系统根据您填写的内容自动生成的数据，仅是您向销售方发出的交易诉求；销售方收到您的订单信息后，只有在销售方将您在订单中订购的商品从仓库实际直接向您发出时（ 以商品出库为标志），方视为您与销售方之间就实际直接向您发出的商品建立了交易关系；如果您在一份订单里订购了多种商品并且销售方只给您发出了部分商品时，您与销售方之间仅就实际直接向您发出的商品建立了交易关系；只有在销售方实际直接向您发出了订单中订购的其他商品时，您和销售方之间就订单中该其他已实际直接向您发出的商品才成立交易关系。您可以随时登录您在本站注册的账户，查询您的订单状态。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;6.2由于市场变化及各种以合理商业努力难以控制的因素的影响，本站无法保证您提交的订单信息中希望购买的商品都会有货；如您拟购买的商品，发生缺货，您有权取消订单。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第7条 所有权及知识产权条款&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;7.1用户一旦接受本协议，即表明该用户主动将其在任何时间段在本站发表的任何形式的信息内容（包括但不限于客户评价、客户咨询、各类话题文章等信息内容）的财产性权利等任何可转让的权利，如著作权财产权（包括并不限于：复制权、发行权、出租权、展览权、表演权、放映权、广播权、信息网络传播权、摄制权、改编权、翻译权、汇编权以及应当由著作权人享有的其他可转让权利），全部独家且不可撤销地转让给商城所有，用户同意商城有权就任何主体侵权而单独提起诉讼。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;7.2本协议已经构成《中华人民共和国著作权法》第二十五条（条文序号依照2011年版著作权法确定）及相关法律规定的著作财产权等权利转让书面协议，其效力及于用户在商城网站上发布的任何受著作权法保护的作品内容，无论该等内容形成于本协议订立前还是本协议订立后。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;7.3用户同意并已充分了解本协议的条款，承诺不将已发表于本站的信息，以任何形式发布或授权其它主体以任何方式使用（包括但不限于在各类网站、媒体上使用）。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;7.4商城是本站的制作者,拥有此网站内容及资源的著作权等合法权利,受国家法律保护,有权不时地对本协议及本站的内容进行修改，并在本站张贴，无须另行通知用户。在法律允许的最大限度范围内，商城对本协议及本站内容拥有解释权。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;7.5除法律另有强制性规定外，未经商城明确的特别书面许可,任何单位或个人不得以任何方式非法地全部或部分复制、转载、引用、链接、抓取或以其他方式使用本站的信息内容，否则，商城有权追究其法律责任。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;7.6本站所刊登的资料信息（诸如文字、图表、标识、按钮图标、图像、声音文件片段、数字下载、数据编辑和软件），均是商城或其内容提供者的财产，受中国和国际版权法的保护。本站上所有内容的汇编是商城的排他财产，受中国和国际版权法的保护。本站上所有软件都是商城或其关联公司或其软件供应商的财产，受中国和国际版权法的保护。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第8条 责任限制及不承诺担保&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;除非另有明确的书面说明,本站及其所包含的或以其它方式通过本站提供给您的全部信息、内容、材料、产品（包括软件）和服务，均是在&amp;quot;按现状&amp;quot;和&amp;quot;按现有&amp;quot;的基础上提供的。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;除非另有明确的书面说明,商城不对本站的运营及其包含在本网站上的信息、内容、材料、产品（包括软件）或服务作任何形式的、明示或默示的声明或担保（根据中华人民共和国法律另有规定的以外）。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;商城不担保本站所包含的或以其它方式通过本站提供给您的全部信息、内容、材料、产品（包括软件）和服务、其服务器或从本站发出的电子信件、信息没有病毒或其他有害成分。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;如因不可抗力或其它本站无法控制的原因使本站销售系统崩溃或无法正常使用导致网上交易无法完成或丢失有关的信息、记录等，商城会合理地尽力协助处理善后事宜。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第9条 协议更新及用户关注义务&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;根据国家法律法规变化及网站运营需要，商城有权对本协议条款不时地进行修改，修改后的协议一旦被张贴在本站上即生效，并代替原来的协议。用户可随时登录查阅最新协议；用户有义务不时关注并阅读最新版的协议及网站公告。如用户不同意更新后的协议，可以且应立即停止接受商城网站依据本协议提供的服务；如用户继续使用本网站提供的服务的，即视为同意更新后的协议。商城建议您在使用本站之前阅读本协议及本站的公告。 如果本协议中任何一条被视为废止、无效或因任何理由不可执行，该条应视为可分的且并不影响任何其余条款的有效性和可执行性。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第10条 法律管辖和适用&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;本协议的订立、执行和解释及争议的解决均应适用在中华人民共和国大陆地区适用之有效法律（但不包括其冲突法规则）。 如发生本协议与适用之法律相抵触时，则这些条款将完全按法律规定重新解释，而其它有效条款继续有效。 如缔约方就本协议内容或其执行发生任何争议，双方应尽力友好协商解决；协商不成时，任何一方均可向有管辖权的中华人民共和国大陆地区法院提起诉讼。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;第11条 其他&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;11.1商城网站所有者是指在政府部门依法许可或备案的商城网站经营主体。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;11.2商城尊重用户和消费者的合法权利，本协议及本网站上发布的各类规则、声明等其他内容，均是为了更好的、更加便利的为用户和消费者提供服务。本站欢迎用户和社会各界提出意见和建议，商城将虚心接受并适时修改本协议及本站上的各类规则。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;11.3本协议内容中以黑体、加粗、下划线、斜体等方式显著标识的条款，请用户着重阅读。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: 宋体, SimSun; color: rgb(102, 102, 102); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;11.4您点击本协议下方的&amp;quot;同意并继续&amp;quot;按钮即视为您完全接受本协议，在点击之前请您再次确认已知悉并完全理解本协议的全部内容。&lt;/span&gt;&lt;/p&gt;', 1435672310),
-(2, 'open_store', '开店协议', '&lt;h2 style=&quot;white-space: normal; padding: 0px; margin: 0px; font-size: 16px; font-weight: normal; color: rgb(51, 51, 51); line-height: 30px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;1.本协议的订立&lt;/span&gt;&lt;/h2&gt;&lt;p class=&quot;cont&quot; style=&quot;margin-top: 0px; margin-bottom: 0px; white-space: normal; padding: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;在本网站（&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://www.ecmoban.com/&quot; class=&quot;link&quot; style=&quot;padding: 0px; margin: 0px; color: rgb(85, 85, 85); font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;dskms.csdeshang.com&lt;/a&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;）依据《德尚商城网站用户注册协议》登记注册，且符合本网站 商家入驻标准的用户（以下简称&amp;quot;商 家&amp;quot;），在同意本协议全部条款后，方有资格使用&amp;quot;德尚商城商家在线入驻系统&amp;quot;（以 下简称&amp;quot;入驻系统&amp;quot;）申请入驻。一经商家点击&amp;quot;同意以上协议，下一步&amp;quot;按键， 即意味着商家同意与本网站签订本协议并同意受本协议约束。&lt;/span&gt;&lt;/p&gt;&lt;h2 style=&quot;white-space: normal; padding: 0px; margin: 0px; font-size: 16px; font-weight: normal; color: rgb(51, 51, 51); line-height: 30px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;2.入驻系统使用说明&lt;/span&gt;&lt;/h2&gt;&lt;p class=&quot;cont&quot; style=&quot;margin-top: 0px; margin-bottom: 0px; white-space: normal; padding: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;2.1 商家通过入驻系统提出入驻申请，并按照要求填写商家信息、提供商家资质资料后，由 本网站审核并与有合作意向的商家联系协商合作相关事宜，经双方协商一致线下签订书面《开放平台 供应商合作运营协议》（以下简称&amp;quot;运营协议&amp;quot;），且商家按照&amp;quot;运营协议&amp;quot;约定 支付相应平台使用费及保证金等必要费用后，商家正式入驻本网站。本网站将为入驻商家开通商家后 台系统，商家可通过商家后台系统在本网站运营 自己的入驻店铺。&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;cont&quot; style=&quot;margin-top: 0px; margin-bottom: 0px; white-space: normal; padding: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;2.2 商家以及本网站通过入驻系统做出的申请、资料提交及确认等各类沟通，仅为双方合作 的意向以及本网站对商家资格审核的必备程序，除遵守本协议各项约定外，对双方不产生法律约束力 。双方间最终合作事宜及运营规则均以&amp;quot;运营协议&amp;quot;的约定及商家后台系统公示的各项规则 为准。&lt;/span&gt;&lt;/p&gt;&lt;h2 style=&quot;white-space: normal; padding: 0px; margin: 0px; font-size: 16px; font-weight: normal; color: rgb(51, 51, 51); line-height: 30px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;3.商家权利义务&lt;/span&gt;&lt;/h2&gt;&lt;p style=&quot;margin-top: 0px; margin-bottom: 0px; white-space: normal; padding: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;用户使用&amp;quot;德尚商城商家在线入驻系统&amp;quot;前请认真阅读并理解本协议内容，本协议 内容中以加粗方式显著标识的条款，请用户着重阅读、慎重考虑。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;', 1435672310);
+INSERT INTO `#__document` (`document_id`, `document_code`, `document_title`, `document_content`, `document_time`) VALUES
+(1, 'agreement', '用户服务协议', '&lt;p&gt;欢迎您注册、使用德尚网络账号！&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;《德尚网络账号使用协议》（如下简称“本协议”）系您与德尚网络科技有限责任公司及其关联公司（如下简称“德尚网络”或“我们”）就德尚网络账号的注册和使用而订立的协议。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;在您使用德尚网络账号的注册和使用服务（如下简称“本服务”）之前，我们在此特别提醒您，请您认真阅读、充分理解本协议各条款，特别是涉及服务费用条款，免除或者限制德尚网络责任的条款，对您的权利限制条款，争议解决和法律适用条款等，此类条款将以加粗的形式提示您注意。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;您通过网络页面点击同意和/或注册和使用德尚网络账号的行为，即视为您已阅读、理解并同意接受本协议，并同意接受本协议各项条款的约束。若您不同意本协议，则您有充分且完全的权利退出本服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;一、 概述&lt;/h2&gt;&lt;p&gt;1.1 德尚网络账号：是指德尚网络通过本协议授权您注册、登录或使用相关德尚网络服务的标识，是德尚网络服务的通行凭证。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;1.2 协议范围：本协议内容同时包括德尚网络可能不断发布的关于本服务的相关协议、服务声明、业务规则及公告提示等内容（以下统称为“本协议”）。上述内容一经正式发布，即为本协议不可分割的组成部分，您同样应当遵守。此外，您在使用德尚网络为您提供的任何单项服务时，应认真阅读各单项服务的相关协议规则，并同意受本协议及单项协议规则的约束。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;1.3 账号基本功能：您可通过德尚网络账号使用德尚网络提供的各类产品或服务，在您使用德尚网络网、应用商店、云服务、浏览器、德尚网络社区、米家等产品或服务，以及德尚网络终端类设备和相关合作伙伴服务时，为您提供账号注册、账号登录与安全、实名认证、家人服务等功能。为了在您使用德尚网络产品或服务时提供安全、便捷和统一的账号登录体验，德尚网络账号将为您开启自动登录功能。您亦可通过德尚网络账号向德尚网络购买米币以便您享受德尚网络的各种虚拟产品和增值服务（如游戏、主题、电子书等）。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;1.4 德尚网络授予您一项有限的、非排他性、不可转让、不可转授及免费使用（除本协议另有声明外）的许可，以供您使用本服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;二、账号使用规范&lt;/h2&gt;&lt;h3&gt;2.1 账号注册&lt;/h3&gt;&lt;p&gt;2.1.1 您确认，在您独立注册和使用德尚网络账号前，您已经具备中华人民共和国法律所规定的完全民事行为能力。若您不具备前述的完全民事行为能力，则您及您的监护人应依照法律规定承担因此而导致的一切后果。如果您是未满十八周岁的未成年人，若您想使用我们的服务，请在您的父母或其他监护人的同意下为您创建未成年人账号后，您方可使用本服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.1.2 您保证在注册时所提交的所有资料（包括但不限于手机号码、邮箱等）真实、准确、合法、有效且系您本人的资料，否则可能无法使用本服务，或在使用过程中受到限制。因您提供的注册信息不真实、不准确或不完整而引发的相关责任或损失， 应由您自行承担。您应当通过真实身份信息认证注册账号，且您提交的账号名称、头像等注册信息中不得出现违法和不良信息，经德尚网络审核，如存在上述情况，德尚网络将不予注册；在您注册后，如发现您以虚假信息骗取账号或账号名称注册，或您的账号头像、简介等注册信息存在违法和不良信息的，德尚网络有权不经通知单方采取限期改正、暂停使用、终止账号等措施。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.1.3 您在使用德尚网络账号的过程中，所提供的信息发生变动的，应当及时进行变更。您可以通过德尚网络账号设置页面查询、更正您的信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;2.2 账号使用&lt;/h3&gt;&lt;p&gt;2.2.1 德尚网络账号系您有权使用我们提供的服务的凭证。德尚网络账号的所有权属于德尚网络，您作为初始申请注册人仅拥有您所注册的德尚网络账号的使用权。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.2.2 您应对您账号项下的所有行为结果（包括但不限于在线签署各类单项条款、发布信息、购买商品及服务及披露信息等）负责。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.2.3 您可在本协议约定的范围内使用德尚网络账号，您不得恶意注册德尚网络账号，未经德尚网络书面同意，您不得赠与、出借、出租、有偿或无偿转让或售卖德尚网络账号或者以其他方式许可非初始申请注册人使用德尚网络账号。德尚网络有权对上述行为进行独立判断并处理，您应当自行承担由此产生的任何责任，同时德尚网络保留追究上述行为人法律责任的权利。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.2.4 由于您的德尚网络账号关联您的个人信息及德尚网络商业信息，您的德尚网络账号仅限您本人使用。未经德尚网络同意，您直接或间接授权第三方使用您德尚网络账号或获取您账号项下信息的行为无效。如德尚网络根据德尚网络各平台规则中约定的违约认定程序及标准判断您德尚网络账号的使用可能危及您的账号安全及或德尚网络信息安全的，德尚网络可拒绝提供相应服务或终止本协议。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.2.5 如您违反上述账号使用规范，德尚网络有权根据法律法规对您采取以下限制措施：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;（1）如您违反我国相关法律法规、德尚网络各单项条款或业务规则的规定，德尚网络有权进行独立判断并随时采取限期改正、暂停使用、终止您对德尚网络账号的使用等措施，且根据实际情况决定是否恢复您对德尚网络账号的继续使用。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;（2）如果德尚网络发现您并非该账号初始申请注册人，德尚网络有权在未经通知的情况下终止您使用该账号。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;（3）德尚网络按照本协议或相关法律法规，限期改正、暂停使用或终止您对德尚网络账号的使用，而由此给您带来的损失（包括但不限于通信中断，用户资料、邮件和相关数据等的清空等），由您自行承担。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.2.6 若您选择第三方账号登录德尚网络的服务，第三方账号将与您的德尚网络账号相关联，德尚网络将根据您授权第三方提供的信息而使用您的信息（如头像）。您后续使用该德尚网络账号的行为受本协议约束。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;2.3 账号保管和安全&lt;/h3&gt;&lt;p&gt;2.3.1 德尚网络账号包括账号名称和密码，您的账号和密码均由您自行设置并保管，您可使用设置的账号名称（包括账号ID、手机号和邮箱）和密码登录并使用相关德尚网络服务。德尚网络任何时候均不会主动要求您提供您的账号密码。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.3.2 您应妥善保管好您的账号信息及密码，建议您采取特定措施保护您的账号安全，包括但不限于采取定期更改密码等相关措施。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.3.3 如果您当前使用的德尚网络账号并非您初始申请注册的或是通过非德尚网络提供的其他途径获得的，但您却知悉该德尚网络账号当前的密码，您不得用该德尚网络账号登录或进行任何操作，并请您在第一时间通知德尚网络或者该德尚网络账号的初始申请注册人。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.3.4 因您个人原因导致的账号信息遗失，如您需找回德尚网络账号信息，请按照德尚网络账号找回流程提供相应的信息，并确保提供的信息合法真实有效，若提供的信息不符合要求，无法通过德尚网络安全验证，德尚网络有权拒绝提供账号找回服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.3.5 因您主动泄露或因您遭受他人攻击、诈骗，以及丢失手机等智能设备等行为而产生的与德尚网络账号相关的损失及后果，德尚网络并不承担责任，您应通过司法、行政等救济途径向侵权行为人追偿。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2.4 账号回收&lt;/p&gt;&lt;p&gt;为了防止德尚网络账号资源被恶意占用，如您连续24个月未使用您的德尚网络账号或未通过德尚网络认可的其他方式登录过您的账号，德尚网络有权终止您对该账号的使用，您将不能再通过该账号登录或使用相关德尚网络服务，德尚网络保留删除该账号相关的所有数据信息以及回收该账号的权利。如该账号有关联的待处理交易或余额等，德尚网络将通过合适的方式（如短信或邮件等）通知您并尽最大努力在合理范围内协助您处理，请您按照德尚网络提示的方式进行操作。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;三、第三方服务&lt;/h2&gt;&lt;p&gt;3.1 如您使用德尚网络账号登录我们的关联公司或其他合作伙伴独立运营的第三方软件或平台（如下简称“第三方服务提供商”），并使用相关产品或服务时，除遵守本协议外，您还需仔细阅读并遵守上述第三方服务提供商的用户协议及隐私政策。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;3.2 德尚网络无权也没有义务控制或审查第三方服务提供商所提供产品或服务的内容，对于您在使用此类第三方产品与服务时遭受的权益侵犯，德尚网络不承担任何责任。德尚网络不对任何第三方服务提供商的产品或服务的可用性、可靠性、安全性负责，也不为第三方在本服务中提供的任何内容、广告、产品、服务或其他信息作出任何形式的承诺、保证或担保。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;3.3 在第三方服务提供商向您收集用户信息或记录您的行为信息时，您应当自行查看相关协议或警示等，我们对此不承担任何提示、审查义务，并不对因此对您可能承担的风险、损失负责，您应当与第三方服务提供商自行协商解决。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;四、用户权利和义务&lt;/h2&gt;&lt;p&gt;4.1 为顺利使用本服务，您需要具备一台或多台与本服务兼容的终端设备，并完成移动数据服务或WLAN网络连接，您应自行支付前述设备和网络连接服务的相关费用。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;4.2 您在使用本服务时，必须遵守《网络安全法》、《互联网新闻信息服务管理规定》、《网络信息内容生态治理规定》《互联网用户账号信息管理规定》《移动互联网应用程序信息服务管理规定》等中华人民共和国相关法律法规的规定，您同意不会利用本服务进行任何违法犯罪行为或不正当的活动，包括但不限于下列行为:&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;4.2.1 上载、展示、张贴、传播或以其他方式传送含有下列内容之一的信息：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;反对宪法所确定的基本原则的；&lt;/p&gt;&lt;p&gt;危害国家安全，泄露国家秘密，颠覆国家政权，破坏国家统一的；&lt;/p&gt;&lt;p&gt;损害国家荣誉和利益的；&lt;/p&gt;&lt;p&gt;煽动民族仇恨、民族歧视、破坏民族团结的；&lt;/p&gt;&lt;p&gt;破坏国家宗教政策，宣扬邪教和封建迷信的；&lt;/p&gt;&lt;p&gt;散布谣言，扰乱社会秩序，破坏社会稳定的；&lt;/p&gt;&lt;p&gt;散布淫秽、色情、赌博、暴力、凶杀、恐怖或者教唆犯罪的；&lt;/p&gt;&lt;p&gt;侮辱或者诽谤他人，侵害他人合法权利的；&lt;/p&gt;&lt;p&gt;含有虚假、有害、胁迫、侵害他人隐私、骚扰、侵害、中伤、粗俗、猥亵、或其他道德上令人反感的内容；&lt;/p&gt;&lt;p&gt;含有中国法律、法规、规章、条例以及任何具有法律效力之规范所限制或禁止的其他内容的。&lt;/p&gt;&lt;p&gt;4.2.2 不得利用本服务从事以下活动：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;未经允许，进入计算机信息网络或者使用计算机信息网络资源的；&lt;/p&gt;&lt;p&gt;未经允许，对计算机信息网络功能进行删除、修改或者增加的；&lt;/p&gt;&lt;p&gt;未经允许，对进入计算机信息网络中存储、处理或者传输的数据和应用程序进行删除、修改或者增加的；&lt;/p&gt;&lt;p&gt;故意制作、传播计算机病毒等破坏性程序的；&lt;/p&gt;&lt;p&gt;进行任何诸如发布广告、销售商品的商业行为，或者进行任何非法的侵害德尚网络利益的行为，如贩卖可币、游戏币、外挂、道具等；&lt;/p&gt;&lt;p&gt;其他危害计算机信息网络安全的行为。&lt;/p&gt;&lt;p&gt;4.3 您违反本协议或其他单项服务条款的规定，导致或产生的第三方向德尚网络与合作公司、关联公司主张的任何索赔、要求或损失，包括合理的律师费，您同意赔偿德尚网络与合作公司、关联公司，并使之免受损害。同时，德尚网络有权视您的行为性质，采取包括但不限于删除发布信息内容、暂停使用许可、终止服务、限制使用德尚网络账号、追究法律责任等措施。同时，德尚网络会视司法部门的要求，协助调查。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;4.4 您不得对本服务任何部分或本服务之使用或获得，进行复制、拷贝、出售、转售或用于任何其他商业目的。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;4.5 您须对自己在使用本服务过程中的行为承担法律责任。您承担法律责任的形式包括但不限于对受到侵害者进行赔偿，以及在德尚网络首先承担了因您的行为导致的行政处罚或侵权损害赔偿责任后，您应给予德尚网络等额的赔偿。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;五、免责声明&lt;/h2&gt;&lt;p&gt;5.1 本服务仅按照“现状”和“现有”提供。在法律允许的最大范围内，我们不承担任何明示或默示的保证、条件或其他协定，也未就此作出任何相保、承诺、声明或保证，包括对本服务及相关单项服务或功能的完整性、准确性、及时性或可靠性等。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.2 在法律允许的最大范围内，对于您或其他任何人因下列原因无法访问或使用本服务导致的任何损失，德尚网络不承担任何责任：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.2.1 任何由于黑客攻击，电脑病毒的侵入，非法内容信息、骚扰信息的屏蔽，政府管制以及其他任何网络、技术、通信线路、信息安全管理措施等原因造成的服务中断、延迟、受阻等情形；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.2.2 因第三方如运营商的通讯线路故障、技术问题、网络、电脑故障、系统不稳定及其他原因等造成的损失的情形；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.2.3 德尚网络对系统或软硬件进行维护或升级导致本服务中止或终止；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.2.4 因台风、地震、停电、洪水、战争、恐怖袭击等不可抗力因素导致的服务中断；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.2.5 由于法律法规的变更、司法机关及行政机关等的命令、裁定等原因而导致的本服务中断、延迟或终止等情形。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.3 本服务仅供您个人使用，未经德尚网络同意，您直接或间接授权第三方使用您德尚网络账号或获取您账号项下信息导致的任何损失，均由您自行承担，德尚网络不承担任何责任。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.4 您可以选择使用您已有的第三方账号关联德尚网络账号，德尚网络对于因第三方原因对您造成的损失不承担任何责任。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.5 我们依法律、诉讼、司法机关或政府机关的要求或其他合理必要的情况下，可能访问、使用、保存、和/或披露您的账号信息和内容。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.6 由于您的使用不当或其他自身原因而导致任何与您相关的个人信息的泄露，德尚网络对此不承担任何责任。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.7 使用德尚网络产品、程序及服务可能存在的来自他人匿名或冒名的含有威胁、诽谤、令人反感或非法内容的信息而招致的风险，或用户之间通过本服务与其他用户交流，因受误导或欺骗而导致或可能导致的任何心理、生理上的伤害以及经济上的损失，均由侵权方承担所有责任，德尚网络对此不承担任何责任。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.8 您在利用德尚网络账号所发布的任何内容并不代表和反映德尚网络的任何观点或政策，德尚网络对此不承担任何责任。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;5.9 在任何情况下，德尚网络均不对任何间接性、后果性、惩罚性、偶然性、特殊性或刑罚性的损害，包括因您使用德尚网络服务而遭受的利润损失，承担责任。您同意，我们对您承担的全部责任，无论因何原因或何种行为方式，始终不超过您在协议有效期内因使用德尚网络服务而支付给德尚网络的费用（如有）。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;六、知识产权&lt;/h2&gt;&lt;p&gt;6.1 您使用德尚网络账号在任何平台发布的信息不得侵犯任何第三人的知识产权，未经具有相关所有权人之事先书面同意，您不得以任何方式上传、发布、修改、传播或复制任何受著作权保护的材料、商标或属于其他人的专有信息。如果收到任何著作权人或其合法代表发给德尚网络的适当通知后，我们将在审查的基础上移除该等侵犯他人著作权的内容。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;6.2 您在使用本服务时利用德尚网络账号发表、上传的文字、图片、视频、软件以及表演等原创信息的知识产权归您所有，但是您确认您对该等信息的发表、上传行为视同为对德尚网络非独占地、永久地、不可撤销地授予该等信息相关全部知识产权的使用、复制等权利，并且您同意德尚网络可转授权上述权利。您同意您不会向德尚网络提供任何您视为保密或专有的信息或资料。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;七、修订&lt;/h2&gt;&lt;p&gt;7.1 鉴于互联网相关技术、市场、业务模式等发展迅速，您同意，德尚网络有权随时根据中华人民共和国有关法律、法规的变化、互联网的发展以及公司经营状况和经营策略的调整等不定时地制定、修改本协议及各类规则。更新后的协议、规则经合理的公示期后即生效，并代替原来的协议、规则。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;7.2 我们将以合适的方式通知您阅读新的协议，您可以在相关服务页面查阅最新版本的协议条款。若修订后的协议、规则会严重影响或限制您继续使用本服务的，我们将通过弹窗、网页显著位置公示、短信等方式获取您的同意。如您不同意修订后的相关条款，则请您立即停止使用本协议下各项服务。您继续登录德尚网络账号或继续使用德尚网络各单项服务的行为，视为您认可并接受经修订的协议、规则。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;7.3 我们可能会依据法律的规定，保留您使用德尚网络服务、或者德尚网络账号的权利；无论是否通知，我们将在任何时间以任何原因终止本协议，包括出于善意地相信您违反了我们可接受使用政策或本协议的其他规定。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;7.4 不受前款规定所限，如果您侵犯第三人的著作权且德尚网络接到著作权人或著作权人的合法代理人的通知后，德尚网络保留终止本协议的权利。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;八、服务终止&lt;/h2&gt;&lt;p&gt;8.1 如果您存在违反法律法规规定及本协议约定情形的，我们有权中止、限制或终止该账号的使用，停止向您提供服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.2 我们有权根据自身经营的实际需要，在合理期限内暂时或永久终止德尚网络账号服务（或任何一部分），您应及时备份该账号中存储的所有数据及信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.3 我们可能会依法律规定、诉讼裁决、司法机关或政府机关的要求终止为您提供德尚网络账号服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.4 若属于上述条款中服务终止的情形，我们会以平台公告、短信、邮件或其他方式尽可能通知您。但存在以下情形时，我们可能在不事先通知您的情况下立即中止、限制或终止您访问全部或部分本服务：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.4.1 您违反本协议或德尚网络有理由认为您即将违反本协议；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.4.2 您或代表您行事的任何人进行欺诈或违法活动，或向德尚网络提供虚假或误导信息；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.4.3 依照有效法律程序响应执法部门或政府机关提出的要求；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.4.4 执行紧急的系统或硬件维护更新工作；&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.4.5 因无法预料的技术、安全或业务原因。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;8.5 如果您的德尚网络账号发布的信息内容存在侵犯第三人的知识产权的情形，且德尚网络接到知识产权人或知识产权人的合法代理人的通知，德尚网络保留终止本协议的权利。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;九、个人信息保护&lt;/h2&gt;&lt;p&gt;9.1 尊重用户隐私并保护您的个人信息安全是我们的一贯态度，德尚网络将会采取合理的措施保护您的个人信息与隐私。我们承诺，除非获得用户同意，德尚网络不会收集、使用其提供服务所必需以外的用户个人信息或者将信息用于提供服务之外的目的。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;9.2 我们将采取法律法规以及约定的必要安全措施，以尽到信息安全保护义务。但请您知悉并理解，我们无法对相关第三方的信息安全保护能力或其处理行为做超出能力范围的保证。如您对相关第三方收集、提供、存储、使用您的个人信息有任何疑问，或决定行使法律法规规定的权利，您可以直接联系该第三方处理。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;9.3 在遵守本协议项下特别约定的个人信息保护与隐私政策外，我们希望您认真并完整阅读《德尚网络账号隐私政策》，这将更有助于保障您的个人信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;十、适用法律与争议解决&lt;/h2&gt;&lt;p&gt;10.1 本协议适用中华人民共和国法律。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;10.2 如果双方发生纠纷，应本着友好的原则协商解决；如协商不成，应向北京市海淀区人民法院提起诉讼。若单项条款与本协议在管辖约定内容上存在冲突，则在单项条款约束范围内应以单项条款为准。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;十一、其他&lt;/h2&gt;&lt;p&gt;11.1 协议生效&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;本协议自您接受之日起生效，在您使用本服务的过程中持续有效，直至依据本协议终止。如果您实际使用本服务的时间早于您接受本协议的时间，您在此知晓或应当知晓并同意本协议于您第一次使用本服务时生效，除非依据本协议提前终止。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;11.2 通知&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;在注册德尚网络账号时，您应该向德尚网络提供真实有效的联系方式（包括您的电子邮件地址、手机号码等），对于联系方式发生变更的，您有义务及时更新有关信息，并保持可被联系的状态。德尚网络将向您的上述联系方式的其中之一或其中若干送达各类通知，而此类通知的内容可能对您的权利义务产生重大的有利或不利影响，请您务必及时关注。您所提供的电子邮件地址或手机号码无法使用或者因任何原因我们无法将通知送达给您而产生的风险，由您自行承担。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;11.3 独立性&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;如本协议中的任一条款被认定为或视为废止、无效、不可执行，其余条款仍具有法律效力，对双方均具有约束力。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;11.4 权利义务的转让&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;未经我们事先书面许可，您不得转让或以其它方式转移您在本协议下的任何权利或义务。任何未受许可的转让或转移都将视为无效。出于业务升级或运营主体发生变化等情况，德尚网络有权转让、分包或更替德尚网络在本协议下的权利和义务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;', 1435672310),
+(2, 'privacy', '用户隐私政策', '&lt;p&gt;请花一些时间熟悉我们的隐私政策，如果您有任何问题，请联系我们。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;引言&lt;/h2&gt;&lt;p&gt;德尚网络账号是由德尚网络科技有限责任公司及其关联公司（以下简称“德尚网络”或“我们”）为您提供的一项账号注册、登录和管理服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;我们非常重视您的个人信息保护及隐私安全。《德尚网络账号隐私政策》（以下简称“本隐私政策”）是德尚网络针对德尚网络公司德尚网络账号做出的隐私方面的陈述与承诺，属于《德尚网络隐私政策》的重要组成部分。涉及到德尚网络账号特殊约定的，若与《德尚网络隐私政策》之间存在不一致的，以本隐私政策为准；若本隐私政策未约定的，以《德尚网络隐私政策》为准。特别是关于“安全措施、跨境传输”等部分的约定，建议您详细阅读《德尚网络隐私政策》。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;本隐私政策在制定时充分考虑到您的需求，您全面了解我们的个人信息收集和使用惯例，同时确保您最终能控制提供给我们的个人信息，这一点至关重要。本隐私政策规定我们如何收集、使用、披露、处理和存储您使用我们的德尚网络账号时提供给我们的信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;注意，您登录德尚网络账号后使用对应产品或服务的个人信息收集使用规则请查看该产品或服务的隐私政策。本隐私政策下“个人信息”指通过信息本身或通过关联其他信息后能够识别特定个人的信息数据。我们将严格遵守本隐私政策来处理使用这些信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;最后，我们希望为用户带来最好的体验。如果您对本隐私政策中描述的个人信息处理实践有任何疑问，请联系我们，以便我们处理您的特殊需求。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;一、我们收集哪些信息以及如何使用信息&lt;/p&gt;&lt;p&gt;（一）您须授权我们收集和使用您个人信息的情形&lt;/p&gt;&lt;p&gt;收集个人信息的目的在于向您提供适用于德尚网络账号的产品和/或服务，并且保证我们遵守适用的相关法律、法规及其他规范性文件。您有权自行选择是否提供该信息，但多数情况下，如果您不提供，我们可能无法向您提供相应的服务，也无法回应您遇到的问题。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;德尚网络仅会出于本隐私政策所述目的收集和使用您提供的个人信息。我们出于提供如下服务功能目的时，可能会以相关特定方式处理您的相关个人信息，这些功能包括：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;1、提供账号基础功能&lt;/h2&gt;&lt;h3&gt;（1）注册或登录&lt;/h3&gt;&lt;p&gt;您在注册时需要向我们提供手机号码或邮箱地址作为您的德尚网络账号名称。同时，您还可以为您的德尚网络账号设置密码。您的账号和密码会将被加密保存在服务器，建议您妥善保管好您的密码信息，谨防您的德尚网络账号被他人盗用。&lt;/p&gt;&lt;p&gt;在您成功注册德尚网络账号后，您可以随时使用德尚网络账号登录德尚网络各类系统应用或服务。为了实现同一设备上所有支持德尚网络账号登录的系统应用或服务能够准确接入德尚网络账号服务，判断德尚网络系统应用或服务的账号登录状态，我们需要获取已安装的应用列表信息。&lt;/p&gt;&lt;p&gt;当您登录德尚网络账号后，德尚网络账号在您使用德尚网络系统应用或服务时开启了自动登录功能，以为您提供流畅的服务体验，这些应用或服务会收集您的德尚网络账号信息以为您提供登录服务。&lt;/p&gt;&lt;p&gt;为提供便捷的登录体验，在注册或登录时，您可以选择自动填写您的手机号码。为此我们需要获取您的SIM卡IMSI、ICCID、设备型号、系统版本信息、联网状态。上述功能可能需要您在您的设备中向我们开启您的网络权限、WIFI状态权限以实现这些功能所涉及的信息的收集和使用。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（2）完善账号信息&lt;/h3&gt;&lt;p&gt;您在使用德尚网络提供的各类服务过程中，您可以通过完善头像、昵称、性别等基础信息，以及设置密保问题，来获得更好的服务与体验，如不提供也不会影响德尚网络账号的基本功能。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;2、保障注册、登录安全所必须的功能&lt;/h3&gt;&lt;p&gt;为提高您使用我们的产品与/或服务时系统的安全性，更准确地预防钓鱼网站欺诈和保护账号安全，我们还会通过短信、邮箱、密码、密保来验证您的身份。&lt;/p&gt;&lt;p&gt;出于风控的目的，我们还会收集您的注册/登录时间、设备相关信息（如设备IMEI/（在Android Q上的）OAID、设备型号、操作系统版本）、设备传感器信息（如手机角速度、手机加速度）、蓝牙地址、网络信息（如Wi-Fi SSID、常用登录IP地址），为此我们需要获取您的设备信息权限，收集您的设备IMEI/OAID，以保障您注册或登录环境的安全。此外，我们还会将您的手机号码提供给第三方（如手机号码风险等级库、运营商的二次号检查服务）进行查验，以保障您的账号安全。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（二）您可选择是否授权我们收集和使用您的个人信息的情形&lt;/h3&gt;&lt;p&gt;为提升您使用德尚网络账号的体验，我们的以下附加功能中可能会收集和使用您的个人信息。如果您不提供这些个人信息，您依然可以使用德尚网络账号，但您可能无法使用这些附加功能。这些附加功能包括：&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;1、家人服务&lt;/p&gt;&lt;p&gt;您可以通过家人服务功能邀请您的家人、朋友共享德尚网络的服务、内容及购买项目。为此，我们会收集您的德尚网络ID、被邀请人的德尚网络ID/手机号码。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;2、未成年人账号&lt;/p&gt;&lt;p&gt;您可以为您的未成年子女创建专属的德尚网络未成年人账号，您需要授权我们获取您的未成年子女的账号昵称、出生日期信息；我们会记录您的未成年子女的出生日期，在您的未成年子女年满十八周岁时及时更正账号状态。此外，您还需要提供给我们您用来绑定未成年人账号的手机号码（未注册过德尚网络账号）信息，以实现后续的登录、账号安全与验证等操作。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（三）您充分知晓，以下情形中，我们收集、使用个人信息无需征得您的同意：&lt;/h3&gt;&lt;p&gt;1、与国家安全、国防安全有关的；&lt;/p&gt;&lt;p&gt;2、与公共安全、公共卫生、重大公共利益有关的；&lt;/p&gt;&lt;p&gt;3、与犯罪侦查、起诉、审判和判决执行等有关的；&lt;/p&gt;&lt;p&gt;4、出于维护个人信息主体或其他个人的生命、财产等重大合法权益但又很难得到本人同意的；&lt;/p&gt;&lt;p&gt;5、所收集的个人信息是个人信息主体自行向社会公众公开的；&lt;/p&gt;&lt;p&gt;6、从合法公开披露的信息中收集的您的个人信息的，如合法的新闻报道、政府信息公开等渠道；&lt;/p&gt;&lt;p&gt;7、根据您的要求签订合同所必需的；&lt;/p&gt;&lt;p&gt;8、用于维护所提供的产品与/或服务的安全稳定运行所必需的，例如发现、处置产品与/或服务的故障；&lt;/p&gt;&lt;p&gt;9、为合法的新闻报道所必需的；&lt;/p&gt;&lt;p&gt;10、学术研究机构基于公共利益开展统计或学术研究所必要，且对外提供学术研究或描述的结果时，对结果中所包含的个人信息进行去标识化处理的。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（四）我们从第三方获得您个人信息的情形&lt;/h3&gt;&lt;p&gt;在一些法律允许的情况下，我们可能从第三方处获得您的个人信息。例如，您授权第三方账号绑定德尚网络账号并登录使用德尚网络的服务或授权导入的您在第三方平台的信息如头像、昵称；出于风控的目的，我们会通过第三方（如手机号码风险等级库、运营商的二次号检查服务）来查验您手机号码的安全情况，以了解您当前注册/登录环境是否安全；在您使用一键登录服务时从运营商处获取您的手机号码；您的家人、朋友邀请您使用共享相关的服务时输入您的德尚网络ID和手机号码。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（五）非个人信息&lt;/h3&gt;&lt;p&gt;我们还可能收集其他无法识别到特定个人的信息（即不属于个人信息的信息），例如您使用特定服务时产生的统计类数据，如您使用德尚网络账号服务时的登录/退出记录、交互记录、错误记录。收集此类信息的目的在于改善我们向您提供的服务。所收集信息的类别和数量取决于您如何使用我们产品和/或服务。我们会将此类信息汇总。就本隐私政策而言，汇总数据被视为非个人信息。如果我们将非个人信息与个人信息结合使用，则在结合使用期间，此类信息将被视为个人信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;二、我们如何共享、转让、公开披露您的个人信息&lt;/h2&gt;&lt;h3&gt;（一）共享：&lt;/h3&gt;&lt;p&gt;我们不会将任何个人信息出售给第三方。&lt;/p&gt;&lt;p&gt;我们有时可能会向第三方（定义见下文）共享您的个人信息，以便提供或改进我们的产品或服务，包括根据您的要求提供产品或服务。如果您不再希望允许我们共享这些信息，请联系我们。&lt;/p&gt;&lt;p&gt;1、与国家安全、国防安全有关的； 您主动选择的共享&lt;/p&gt;&lt;p&gt;在获得您的明确同意或主动选择的情况下，向您指定的第三方共享您授权范围内的信息。&lt;/p&gt;&lt;p&gt;2、与我们集团共享信息&lt;/p&gt;&lt;p&gt;为了顺利地从事商业经营，以向您提供产品或服务的全部功能，我们可能不时向其他的德尚网络关联公司共享您的个人信息。&lt;/p&gt;&lt;p&gt;3、与第三方服务提供商共享您的个人信息&lt;/p&gt;&lt;p&gt;当您在第三方网站/应用使用德尚网络账号登录时，我们会获取您的授权，授权页面上会展示具体的授权对象以及授权信息类型，在您授权同意后，我们会将您的授权信息（取决于该第三方的服务和产品性质）传给该第三方。若您不同意该第三方获得您的个人信息，请您不要同意授权。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;本业务中部分服务内容由第三方服务提供商提供，为此我们需要向第三方服务提供商提供您的部分个人信息，[点击查看]我们向关联方、合作伙伴及第三方共享您的个人信息的情形。如我们与这些第三方分享您的个人信息，我们将采取加密等手段保障您的信息安全。对我们与之共享个人信息的公司、组织，我们会对其数据安全环境进行合理审查，并与其签署严格的数据处理协议，要求第三方对您的信息采取足够的保护措施，严格遵守相关法律法规与监管要求。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（二）转让&lt;/h3&gt;&lt;p&gt;我们不会将您的个人信息转让给任何公司、组织和个人，但以下情况除外：&lt;/p&gt;&lt;p&gt;1、在获取明确同意的情况下转让：获得您的明确同意后，我们会向其他方转让您的个人信息。&lt;/p&gt;&lt;p&gt;2、在涉及合并、分立、解散、被宣告破产、收购等原因需要转移您的个人信息时，我们将向您告知接收方的名称和联系方式。我们将要求接收方继续履行个人信息处理者的义务。接收方变更本隐私政策约定的处理目的、处理方式的，应当依照规定重新取得您的个人同意。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h3&gt;（三）公开披露&lt;/h3&gt;&lt;p&gt;我们仅会在以下情况下，公开披露您的个人信息：&lt;/p&gt;&lt;p&gt;1、获得您明确同意后；&lt;/p&gt;&lt;p&gt;2、基于法律的披露：在法律、法律程序、诉讼或政府主管部门强制性要求的情况下，我们可能会对上述监管部门披露您的个人信息。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;四、保留政策&lt;/h2&gt;&lt;p&gt;我们基于本隐私政策中所述的信息收集的目的所必需的期间，或者遵守适用的相关法律要求保留个人信息。个人信息在完成收集目的，或在我们确认您的删除或注销申请后，或我们终止运营相应产品或服务后，我们将停止保留，并做删除或匿名化处理。如果是出于公众利益、科学、历史研究或统计的目的，我们将基于适用的法律继续保留相关数据，即使进一步的数据处理与原有的收集目的无关。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;五、我们如何保护未成年人的个人信息安全&lt;/h2&gt;&lt;p&gt;我们重视并关注未成年人的个人信息保护。我们不会在明知且未经授权的情况下收集未成年人个人信息，如果我们发现在未事先获得可证实的父母或监护人同意的情况下收集了未成年人的个人信息，则会设法尽快删除相关信息。但请您知悉并同意，在某些特定场景和功能中（如创建未成年人账号），您需要授权我们获取您的未成年子女的部分个人信息。如果您的未成年子女为14周岁以下的儿童，关于德尚网络对于儿童个人信息的保护规则，请您点击查阅《德尚网络账号儿童信息保护规则》。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;六、第三方服务说明&lt;/h2&gt;&lt;p&gt;德尚网络的产品或服务中可能含有第三方网站、产品与服务的链接。德尚网络的产品或服务也可能使用或提供来自第三方的产品或服务，如德尚网络应用商店内内上架的第三方应用。所有含有第三方网站、产品与服务的链接仅为方便用户而提供。请您注意，该第三方可能会处理您的相关信息，建议您在使用第三方服务前，仔细阅读、充分理解其相关的个人信息保护规则后再使用第三方的产品或服务。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;h2&gt;七、本隐私政策如何更新&lt;/h2&gt;&lt;p&gt;我们会根据业务和技术的变更，根据适用法律，依循良好做法，定期审核隐私政策，并可能更新本隐私政策。如果我们对本隐私政策进行重大变更，我们将通过系统内弹窗等合理的方式通知您，这样您可以了解我们收集的信息以及我们如何使用这些信息。此类隐私政策将从规定的生效日期开始适用。我们建议您定期查阅本页面以获取我们个人信息处理实践的最新信息。您继续使用德尚网络账号并登录德尚网络相关系统应用或服务的行为，将被视为接受更新的隐私政策。在我们向您收集更多的个人信息或我们因为新的目的使用或披露您的个人信息时，我们会根据适用法律要求，再次征得您的同意。&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;', 1435672310),
+(3, 'open_store', '开店协议', '&lt;h2 style=&quot;padding: 0px; margin: 0px; font-size: 16px; font-weight: normal; color: rgb(51, 51, 51); line-height: 30px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;1.本协议的订立&lt;/span&gt;&lt;/h2&gt;&lt;p class=&quot;cont&quot; style=&quot;padding: 0px; margin-top: 0px; margin-bottom: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;在本网站（&lt;/span&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://www.ecmoban.com/&quot; class=&quot;link&quot; style=&quot;padding: 0px; margin: 0px; text-decoration: underline; color: rgb(85, 85, 85); font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;dsmall.csdeshang.com&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;）依据《德尚商城网站用户注册协议》登记注册，且符合本网站 商家入驻标准的用户（以下简称&amp;quot;商 家&amp;quot;），在同意本协议全部条款后，方有资格使用&amp;quot;德尚商城商家在线入驻系统&amp;quot;（以 下简称&amp;quot;入驻系统&amp;quot;）申请入驻。一经商家点击&amp;quot;同意以上协议，下一步&amp;quot;按键， 即意味着商家同意与本网站签订本协议并同意受本协议约束。&lt;/span&gt;&lt;/p&gt;&lt;h2 style=&quot;padding: 0px; margin: 0px; font-size: 16px; font-weight: normal; color: rgb(51, 51, 51); line-height: 30px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;2.入驻系统使用说明&lt;/span&gt;&lt;/h2&gt;&lt;p class=&quot;cont&quot; style=&quot;padding: 0px; margin-top: 0px; margin-bottom: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;2.1 商家通过入驻系统提出入驻申请，并按照要求填写商家信息、提供商家资质资料后，由 本网站审核并与有合作意向的商家联系协商合作相关事宜，经双方协商一致线下签订书面《开放平台 供应商合作运营协议》（以下简称&amp;quot;运营协议&amp;quot;），且商家按照&amp;quot;运营协议&amp;quot;约定 支付相应平台使用费及保证金等必要费用后，商家正式入驻本网站。本网站将为入驻商家开通商家后 台系统，商家可通过商家后台系统在本网站运营 自己的入驻店铺。&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;cont&quot; style=&quot;padding: 0px; margin-top: 0px; margin-bottom: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;2.2 商家以及本网站通过入驻系统做出的申请、资料提交及确认等各类沟通，仅为双方合作 的意向以及本网站对商家资格审核的必备程序，除遵守本协议各项约定外，对双方不产生法律约束力 。双方间最终合作事宜及运营规则均以&amp;quot;运营协议&amp;quot;的约定及商家后台系统公示的各项规则 为准。&lt;/span&gt;&lt;/p&gt;&lt;h2 style=&quot;padding: 0px; margin: 0px; font-size: 16px; font-weight: normal; color: rgb(51, 51, 51); line-height: 30px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;3.商家权利义务&lt;/span&gt;&lt;/h2&gt;&lt;p style=&quot;padding: 0px; margin-top: 0px; margin-bottom: 0px; line-height: 28px;&quot;&gt;&lt;span style=&quot;font-family: 宋体, SimSun; font-size: 12px;&quot;&gt;用户使用&amp;quot;德尚商城商家在线入驻系统&amp;quot;前请认真阅读并理解本协议内容，本协议 内容中以加粗方式显著标识的条款，请用户着重阅读、慎重考虑。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;', 1435672310);
 
 INSERT INTO `#__help` (`help_id`, `help_sort`, `help_title`, `help_info`, `help_url`, `help_updatetime`, `helptype_id`, `page_show`) VALUES
 (96, 1, '招商方向', '后台->机构->开店首页->入驻指南->编辑内容', '', 1399284217, 1, 1),
@@ -2386,8 +2371,6 @@ INSERT INTO `#__storemsgtpl` (`storemt_code`, `storemt_name`, `storemt_message_s
 ('return', '退货提醒', 1, '您有一个${type}退货单需要处理。退货编号：${refund_sn}。', 1, 0, '您有一个${type}退货单需要处理。退货编号：${refund_sn}。', 0, 0, '${site_name}提醒：您有一个${type}退货单需要处理。退货编号：${refund_sn}。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	您有一个${type}退货单需要处理。退货编号：${refund_sn}。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<br />', 0),
 ('return_auto_process', '退货自动处理提醒', 1, '您的${type}退货单超期未处理，已自动同意买家退货申请（弃货）。退货单编号：${refund_sn}。', 1, 0, '您的${type}退货单超期未处理，已自动同意买家退货申请（弃货）。退货单编号：${refund_sn}。', 0, 0, '${site_name}提醒：您的${type}退货单超期未处理，已自动同意买家退货申请（弃货）。退货单编号：${refund_sn}。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	您的${type}退货单超期未处理，已自动同意买家退货申请（弃货）。退货单编号：${refund_sn}。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>', 0),
 ('return_auto_receipt', '退货未收货自动处理提醒', 1, '您的${type}退货单不处理收货超期未处理，已自动按弃货处理。退货单编号：${refund_sn}。', 1, 0, '您的${type}退货单不处理收货超期未处理，已自动按弃货处理。退货单编号：${refund_sn}。', 0, 0, '${site_name}提醒：您的${type}退货单超期未处理，已自动同意买家退货申请（弃货）。退货单编号：${refund_sn}。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	您的${type}退货单超期未处理，已自动同意买家退货申请（弃货）。退货单编号：${refund_sn}。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>\r\n<p>\r\n	<br />\r\n</p>', 0),
-('store_bill_affirm', '结算单等待确认提醒', 1, '您有新的结算单等待确认，开始时间：${state_time}，结束时间：${end_time}，结算单号：${bill_no}。', 1, 0, '您有新的结算单等待确认，开始时间：${state_time}，结束时间：${end_time}，结算单号：${bill_no}。', 0, 0, '${site_name}提醒：您有新的结算单等待确认。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	您有新的结算单等待确认，起止时间：开始时间：${state_time}，结束时间：${end_time}，结算单号：${bill_no}。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>\r\n<p>\r\n	<br />\r\n</p>', 0),
-('store_bill_gathering', '结算单已经付款提醒', 1, '您的结算单平台已付款，请注意查收，结算单编号：${bill_no}。', 1, 0, '您的结算单平台已付款，请注意查收，结算单编号：${bill_no}。', 0, 0, '${site_name}提醒：您的结算单平台已付款，请注意查收。', '<p>\r\n	</p><p>\r\n		${site_name}提醒：\r\n	</p>\r\n\r\n<p>\r\n	您的结算单平台已付款，请注意查收，结算单编号：${bill_no}。\r\n	</p><p>\r\n		<br />\r\n	</p>\r\n	<p>\r\n		<br />\r\n	</p>\r\n	<p>\r\n		<br />\r\n	</p>\r\n	<p style="text-align:right;">\r\n		${site_name}\r\n	</p>\r\n	<p style="text-align:right;">\r\n		${mail_send_time}\r\n	</p>\r\n\r\n<br />', 0),
 ('store_cost', '机构消费提醒', 1, '您有一条新的机构消费记录，金额：${price}，操作人：${seller_name}，备注：${remark}。', 1, 1, '您有一条新的机构消费记录，金额：${price}，操作人：${seller_name}，备注：${remark}。', 1, 0, '${site_name}提醒：您有一条新的机构消费记录。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	您有一条新的机构消费记录，金额：${price}，操作人：${seller_name}，备注：${remark}。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>', 0),
 ('store_expire', '机构到期提醒', 1, '你的机构即将到期，请及时续期。', 1, 0, '你的机构即将到期，请及时续期。', 0, 0, '${site_name}提醒：你的机构即将到期，请及时续期。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	你的机构即将到期，请及时续期。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>\r\n<p>\r\n	<br />\r\n</p>', 0),
 ('live_apply_verify', '直播审核失败提醒', 1, '您申请的直播没有通过管理员审核，原因：“${remark}”。直播号：${live_apply_id}。', 1, 0, '您申请的直播没有通过管理员审核，原因：“${remark}”。直播号：${live_apply_id}。', 0, 0, '${site_name}提醒：您申请的直播没有通过管理员审核。', '<p>\r\n	${site_name}提醒：\r\n</p>\r\n<p>\r\n	您申请的直播没有通过管理员审核，原因：“${remark}”。直播号：${live_apply_id}。\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p>\r\n	<br />\r\n</p>\r\n<p style="text-align:right;">\r\n	${site_name}\r\n</p>\r\n<p style="text-align:right;">\r\n	${mail_send_time}\r\n</p>\r\n<p>\r\n	<br />\r\n</p>', 0);

@@ -73,23 +73,23 @@ class  Sellermoney extends BaseSeller {
         $member_info = model('member')->getMemberInfoByID(session('member_id'));
         if (request()->isPost()) {
             $amount = floatval(input('post.amount'));
-            
+
             $storemoneylog_model = model('storemoneylog');
             $predeposit_model = model('predeposit');
-            
-            if($amount>floatval($member_info['available_predeposit'])){
-                ds_json_encode(10001,lang('sellermoney_rechargew_money_max').$member_info['available_predeposit'].lang('currency_zh'));
+
+            if ($amount > floatval($member_info['available_predeposit'])) {
+                ds_json_encode(10001, lang('sellermoney_rechargew_money_max') . $member_info['available_predeposit'] . lang('currency_zh'));
             }
-            $storedata=array(
-                'store_id'=>$this->store_info['store_id'],
-                'store_name'=>$this->store_info['store_name'],
-                'storemoneylog_type'=>Storemoneylog::TYPE_MEMBER_IN,
-                'storemoneylog_state'=>Storemoneylog::STATE_VALID,
-                'storemoneylog_add_time'=>TIMESTAMP,
-                'store_avaliable_money'=>$amount,
-                'storemoneylog_desc' => lang('sellermoney_member_money').lang('sellermoney_rechargew').'，'.lang('sellermoney_money').'：'. $amount,
+            $storedata = array(
+                'store_id' => $this->store_info['store_id'],
+                'store_name' => $this->store_info['store_name'],
+                'storemoneylog_type' => Storemoneylog::TYPE_MEMBER_IN,
+                'storemoneylog_state' => Storemoneylog::STATE_VALID,
+                'storemoneylog_add_time' => TIMESTAMP,
+                'storemoneylog_avaliable_money' => $amount,
+                'storemoneylog_desc' => lang('sellermoney_member_money') . lang('sellermoney_rechargew') . '，' . lang('sellermoney_money') . '：' . $amount,
             );
-            
+
             $order_sn = makePaySn($member_info['member_id']);
             $memberdata = array(
                 'member_id' => $member_info['member_id'],
@@ -97,24 +97,25 @@ class  Sellermoney extends BaseSeller {
                 'member_name' => $member_info['member_name'],
                 'order_sn' => $order_sn,
             );
-            
+
+            Db::startTrans();
             try {
-                Db::startTrans();
+
                 $storemoneylog_model->changeStoremoney($storedata);
                 $predeposit_model->changePd('store_rechargew_pay', $memberdata);
                 Db::commit();
                 $this->recordSellerlog(lang('sellermoney_rechargew_money'));
-                ds_json_encode(10000,lang('ds_common_op_succ'));
+                ds_json_encode(10000, lang('ds_common_op_succ'));
             } catch (\Exception $e) {
                 Db::rollback();
-                ds_json_encode(10001,$e->getMessage());
+                ds_json_encode(10001, $e->getMessage());
             }
         } else {
             View::assign('member_info', $member_info);
             return View::fetch($this->template_dir . 'add');
         }
     }
-    
+
     /**
      * 店铺资金提现到会员余额
      */
@@ -136,7 +137,7 @@ class  Sellermoney extends BaseSeller {
                 'storemoneylog_type'=>Storemoneylog::TYPE_MEMBER_OUT,
                 'storemoneylog_state'=>Storemoneylog::STATE_VALID,
                 'storemoneylog_add_time'=>TIMESTAMP,
-                'store_avaliable_money'=>-$amount,
+                'storemoneylog_avaliable_money'=>-$amount,
                 'storemoneylog_desc' => lang('sellermoney_withdraw_member').'，'.lang('sellermoney_money').'：'. $amount,
             );
             
@@ -148,8 +149,8 @@ class  Sellermoney extends BaseSeller {
                 'order_sn' => $order_sn,
             );
             
+            Db::startTrans();
             try {
-                Db::startTrans();
                 $storemoneylog_model->changeStoremoney($storedata);
                 $predeposit_model->changePd('store_withdraw', $memberdata);
                 Db::commit();
@@ -206,8 +207,8 @@ class  Sellermoney extends BaseSeller {
                 'storemoneylog_state' => Storemoneylog::STATE_WAIT,
                 'storemoneylog_add_time' => TIMESTAMP,
             );
-            $data['store_avaliable_money'] = -$pdc_amount;
-            $data['store_freeze_money'] = $pdc_amount;
+            $data['storemoneylog_avaliable_money'] = -$pdc_amount;
+            $data['storemoneylog_freeze_money'] = $pdc_amount;
 
             $storejoinin_info = Db::name('storejoinin')->where(array('member_id' => $this->store_info['member_id']))->field('settlement_bank_account_name,settlement_bank_account_number,settlement_bank_name,settlement_bank_address')->find();
 
@@ -219,15 +220,16 @@ class  Sellermoney extends BaseSeller {
             }
 
             $data['storemoneylog_desc'] = $sml_desc;
+            
+            Db::startTrans();
             try {
-                Db::startTrans();
                 $storemoneylog_model->changeStoremoney($data);
                 Db::commit();
                 $this->recordSellerlog(lang('sellermoney_apply_withdraw'));
-                ds_json_encode(10000,lang('ds_common_op_succ'));
+                ds_json_encode(10000, lang('ds_common_op_succ'));
             } catch (\Exception $e) {
                 Db::rollback();
-                ds_json_encode(10001,$e->getMessage());
+                ds_json_encode(10001, $e->getMessage());
             }
         } else {
             View::assign('store_withdraw_cycle', config('ds_config.store_withdraw_cycle'));

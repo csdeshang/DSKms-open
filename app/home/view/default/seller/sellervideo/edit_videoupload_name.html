@@ -1,0 +1,23 @@
+<div class="eject_con">
+    <div id="warning" class="alert alert-error"></div>
+    <form method="post" id="videoupload_name_form" action="{:url('Sellervideo/edit_videoupload_name',['videoupload_id'=>$videoupload_info.videoupload_id])}">
+        <dl>
+            <dt><i class="required">*</i>视频名称：</dt>
+            <dd><input name="videoupload_name" value="{$videoupload_info.videoupload_name}" type="text" class="text w300">
+            </dd>
+        </dl>
+
+        <div class="bottom">
+            <input type="submit"  class="submit" value="{$Think.lang.ds_submit}" />
+        </div>
+    </form>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#videoupload_name_form').validate({
+            submitHandler: function (form) {
+                ds_ajaxpost('videoupload_name_form');
+            }
+        });
+    });
+</script>

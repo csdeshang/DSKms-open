@@ -445,11 +445,6 @@ class  AdminControl extends BaseController {
                         'text' => lang('ds_storejoin'),
                         'args' => 'index,Storejoin,store',
                     ),
-                    'Ownshop' => array(
-                        'ico' => '&#xe6ec;',
-                        'text' => lang('ds_ownshop'),
-                        'args' => 'index,Ownshop,store',
-                    ),
                 ),
             ),
             'trade' => array(
@@ -466,11 +461,6 @@ class  AdminControl extends BaseController {
                         'ico' => '&#xe6f3;',
                         'text' => lang('ds_vrrefund'),
                         'args' => 'refund_manage,Vrrefund,trade',
-                    ),
-                    'Bill' => array(
-                        'ico' => '&#xe69c;',
-                        'text' => lang('ds_bill_manage'),
-                        'args' => 'show_statis,Bill,trade',
                     ),
                     'consulting' => array(
                         'ico' => '&#xe71c;',
@@ -675,7 +665,6 @@ class  AdminControl extends BaseController {
                     array('name' => lang('ds_storeclass'), 'action' => null, 'controller' => 'Storeclass'),
                     array('name' => lang('ds_Storehelp'), 'action' => null, 'controller' => 'Storehelp'),
                     array('name' => lang('ds_storejoin'), 'action' => null, 'controller' => 'Storejoin'),
-                    array('name' => lang('ds_ownshop'), 'action' => null, 'controller' => 'Ownshop'),
                 )),
             array('name' => lang('ds_member'), 'child' => array(
                     array('name' => lang('ds_member_manage'), 'action' => null, 'controller' => 'Member'),
@@ -690,7 +679,6 @@ class  AdminControl extends BaseController {
             array('name' => lang('ds_trade'), 'child' => array(
                     array('name' => lang('ds_vrorder'), 'action' => null, 'controller' => 'Vrorder'),
                     array('name' => lang('ds_vrrefund'), 'action' => null, 'controller' => 'Vrrefund'),
-                    array('name' => lang('ds_bill_manage'), 'action' => null, 'controller' => 'Bill'),
                     array('name' => lang('ds_consulting'), 'action' => null, 'controller' => 'Consulting'),
                     array('name' => lang('ds_inform'), 'action' => null, 'controller' => 'Inform'),
                     array('name' => lang('ds_evaluate'), 'action' => null, 'controller' => 'Evaluate'),

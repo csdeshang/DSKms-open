@@ -1091,6 +1091,15 @@ form input.error{border:red 1px dotted;}
 .dssc-album li dl dd.buttons a i, .dssc-picture-list li dl dd.buttons a i{margin-right:4px;}
 .dssc-album li dl dd a:hover, .dssc-picture-list li dl dd a:hover{text-decoration:none;color:#27A9E3;box-shadow:0 0 4px rgba(153,153,153,0.75);}
 
+/*视频列表*/
+.dssc-video-list{text-align:left;margin:20px 0;overflow:hidden;}
+.dssc-video-list dl{font-size:12px;width:240px;padding:14px;z-index:1;float:left;border:solid 1px #c3c3c3;margin-right:20px;}
+.dssc-video-list.dl:hover{background-color:#E6E6E6;border:solid 1px #CCC;}
+.dssc-video-list dl dt{width:240px;height:240px;}
+.dssc-video-list dl dt .picture{border:solid 1px #FAFAFA;}
+.dssc-video-list dl dd{line-height:30px;}
+.dssc-video-list dl dd.buttons{}
+.dssc-video-list dl dd.buttons a{font-size:12px;color:#999;background-color:#FFF;}
 
 /* 水印管理 */
 .dssc-watermark-pos{font-size:0;*word-spacing:-1px/*IE6、7*/;background-color:#FFF;width:183px;height:183px;padding:0;margin:0;border:solid #E6E6E6;border-width:1px 1px 0 0;box-shadow:3px 3px 0 rgba(153,153,153,0.25);position:relative;z-index:1;}

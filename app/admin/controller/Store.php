@@ -28,7 +28,8 @@ class  Store extends AdminControl {
      */
     public function store() {
         $store_model = model('store');
-
+        
+        $condition = array();
         $owner_and_name = input('get.owner_and_name');
         if (trim($owner_and_name) != '') {
             $condition[] = array('member_name','like', '%' . $owner_and_name . '%');
@@ -59,8 +60,6 @@ class  Store extends AdminControl {
                 break;
         }
 
-        // 默认机构管理不包含自营机构
-        $condition[] = array('is_platform_store','=',0);
 
         //机构列表
         $store_list = $store_model->getStoreList($condition, 10, 'store_id desc');
@@ -685,49 +684,49 @@ class  Store extends AdminControl {
         $storejoinin_model = model('storejoinin');
         $store_model = model('store');
 
-
         $param = array();
         $param['joinin_state'] = input('post.verify_type') === 'pass' ? STORE_JOIN_STATE_FINAL : STORE_JOIN_STATE_PAY_FAIL;
         $param['joinin_message'] = input('post.joinin_message');
 
         if (input('post.verify_type') === 'pass') {
-			Db::startTrans();
-			try{
-				$store_model->setStoreOpen($joinin_detail,$param);
-			}catch(\Exception $e) {
-				Db::rollback();
-				$this->error($e->getMessage());
+            Db::startTrans();
+            try {
+                $store_model->setStoreOpen($joinin_detail, $param);
+                Db::commit();
+            } catch (\Exception $e) {
+                Db::rollback();
+                $this->error($e->getMessage());
             }
-			Db::commit();
-			dsLayerOpenSuccess('机构开店成功');
-		} else {
-			Db::startTrans();
-			try{
-				$predeposit_model = model('predeposit');
-				if($joinin_detail['rcb_amount']>0){
-					$data_pd = array();
-					$data_pd['member_id'] = $joinin_detail['member_id'];
-					$data_pd['member_name'] = $joinin_detail['member_name'];
-					$data_pd['amount'] = $joinin_detail['rcb_amount'];
-					$data_pd['order_sn'] = $joinin_detail['pay_sn'];
-					$predeposit_model->changeRcb('storejoinin_cancel', $data_pd);
-				}
-				if($joinin_detail['pd_amount']>0){
-					$data_pd = array();
-					$data_pd['member_id'] = $joinin_detail['member_id'];
-					$data_pd['member_name'] = $joinin_detail['member_name'];
-					$data_pd['amount'] = $joinin_detail['pd_amount'];
-					$data_pd['order_sn'] = $joinin_detail['pay_sn'];
-					$predeposit_model->changePd('storejoinin_cancel', $data_pd);
-				}
-            //改变店铺状态
-            $storejoinin_model->editStorejoinin($param, array('member_id' => input('param.member_id')));
-            }catch(\Exception $e) {
-                    Db::rollback();
-                    $this->error($e->getMessage());
-            }
-            Db::commit();
             
+            dsLayerOpenSuccess('机构开店成功');
+        } else {
+            Db::startTrans();
+            try {
+                $predeposit_model = model('predeposit');
+                if ($joinin_detail['rcb_amount'] > 0) {
+                    $data_pd = array();
+                    $data_pd['member_id'] = $joinin_detail['member_id'];
+                    $data_pd['member_name'] = $joinin_detail['member_name'];
+                    $data_pd['amount'] = $joinin_detail['rcb_amount'];
+                    $data_pd['order_sn'] = $joinin_detail['pay_sn'];
+                    $predeposit_model->changeRcb('storejoinin_cancel', $data_pd);
+                }
+                if ($joinin_detail['pd_amount'] > 0) {
+                    $data_pd = array();
+                    $data_pd['member_id'] = $joinin_detail['member_id'];
+                    $data_pd['member_name'] = $joinin_detail['member_name'];
+                    $data_pd['amount'] = $joinin_detail['pd_amount'];
+                    $data_pd['order_sn'] = $joinin_detail['pay_sn'];
+                    $predeposit_model->changePd('storejoinin_cancel', $data_pd);
+                }
+                //改变店铺状态
+                $storejoinin_model->editStorejoinin($param, array('member_id' => input('param.member_id')));
+                Db::commit();
+            } catch (\Exception $e) {
+                Db::rollback();
+                $this->error($e->getMessage());
+            }
+
             dsLayerOpenSuccess(lang('ds_common_op_succ'));
         }
     }
@@ -768,38 +767,6 @@ class  Store extends AdminControl {
         $this->error('消息发送失败');
     }
 
-    /*
-    //删除机构操作，暂时屏蔽
-    public function del() {
-        $store_id = intval(input('param.id'));
-        $store_model = model('store');
-        $storeArray = $store_model->field('is_platform_store,store_name')->find($store_id);
-        if (empty($storeArray)) {
-            ds_json_encode('10001', lang('外驻机构不存在'));
-        }
-        if ($storeArray['is_platform_store']) {
-            ds_json_encode('10001', lang('不能在此删除自营机构'));
-        }
-        $condition = array(
-            'store_id' => $store_id,
-        );
-        if (model('goods')->getGoodsCount($condition) > 0){
-            ds_json_encode('10001', lang('已经发布商品的外驻机构不能被删除'));
-        }
-        // 完全删除机构
-        $store_model->delStoreEntirely($condition);
-        //删除入驻相关 
-        $member_id = intval(input('param.member_id'));
-        $store_joinin = model('storejoinin');
-        $condition = array(
-            'member_id' => $member_id,
-        );
-        $store_joinin->delStorejoinin($condition);
-        $this->log("删除外驻机构: {$storeArray['store_name']}");
-        ds_json_encode('10000', lang('ds_common_del_succ'));
-    }
-     * 
-     */
 
     //删除机构操作 
     public function del_join() {
@@ -821,33 +788,33 @@ class  Store extends AdminControl {
         if ($scount > 0) {
             $this->error('操作失败已有机构在运营', get_referer());
         }
-		Db::startTrans();
-		try{
-		    $predeposit_model = model('predeposit');
-		    if($mm['rcb_amount']>0){
-				$data_pd = array();
-				$data_pd['member_id'] = $mm['member_id'];
-				$data_pd['member_name'] = $mm['member_name'];
-				$data_pd['amount'] = $mm['rcb_amount'];
-				$data_pd['order_sn'] = $mm['pay_sn'];
-				$predeposit_model->changeRcb('storejoinin_cancel', $data_pd);
-		    }
-		    if($mm['pd_amount']>0){
-				$data_pd = array();
-				$data_pd['member_id'] = $mm['member_id'];
-				$data_pd['member_name'] = $mm['member_name'];
-				$data_pd['amount'] = $mm['pd_amount'];
-				$data_pd['order_sn'] = $mm['pay_sn'];
-				$predeposit_model->changePd('storejoinin_cancel', $data_pd);
-		    }
-		// 完全删除店铺入驻
-		$store_joinin->delStorejoinin($condition);
-		}catch(\Exception $e) {
-		        Db::rollback();
-		        $this->error($e->getMessage());
-		}
-		Db::commit();
-		
+        Db::startTrans();
+        try {
+            $predeposit_model = model('predeposit');
+            if ($mm['rcb_amount'] > 0) {
+                $data_pd = array();
+                $data_pd['member_id'] = $mm['member_id'];
+                $data_pd['member_name'] = $mm['member_name'];
+                $data_pd['amount'] = $mm['rcb_amount'];
+                $data_pd['order_sn'] = $mm['pay_sn'];
+                $predeposit_model->changeRcb('storejoinin_cancel', $data_pd);
+            }
+            if ($mm['pd_amount'] > 0) {
+                $data_pd = array();
+                $data_pd['member_id'] = $mm['member_id'];
+                $data_pd['member_name'] = $mm['member_name'];
+                $data_pd['amount'] = $mm['pd_amount'];
+                $data_pd['order_sn'] = $mm['pay_sn'];
+                $predeposit_model->changePd('storejoinin_cancel', $data_pd);
+            }
+            // 完全删除店铺入驻
+            $store_joinin->delStorejoinin($condition);
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+            $this->error($e->getMessage());
+        }
+
         $this->log("删除机构入驻:" . $store_name);
         ds_json_encode('10000', lang('ds_common_del_succ'));
     }
@@ -871,14 +838,16 @@ class  Store extends AdminControl {
             if (!$this->checkMemberName($member_name))
                 $this->error('店主账号已被占用');
 
-            try {
+            if (!$this->checkSellerName($member_name))
+                $this->error(lang('member_name_exist'));
+            
                 $memberId = model('member')->addMember(array(
                     'member_name' => $member_name,
                     'member_password' => $member_password,
                 ));
-            } catch (Exception $ex) {
-                $this->error('店主账号新增失败');
-            }
+                if (!$memberId) {
+                    $this->error('店主账号新增失败');
+                }
 
             $store_model = model('store');
 
@@ -890,7 +859,6 @@ class  Store extends AdminControl {
             $saveArray['bind_all_gc'] = 1;
             $saveArray['store_state'] = 1;
             $saveArray['store_addtime'] = TIMESTAMP;
-            $saveArray['is_platform_store'] = 0;
             $saveArray['grade_id'] = 1;
 
             $storeId = $store_model->addStore($saveArray);
@@ -925,8 +893,6 @@ class  Store extends AdminControl {
             $album_arr['aclass_isdefault'] = '1';
             $album_model->addAlbumclass($album_arr);
 
-            // 删除自营店id缓存
-            model('store')->dropCachedOwnShopIds();
 
             $this->log("新增外驻机构: {$saveArray['store_name']}");
             $this->success('新增外驻机构成功，请添加机构经营类目', url('Store/store_bind_class',['store_id'=>$storeId]));        }
@@ -976,10 +942,18 @@ class  Store extends AdminControl {
      * 验证机构名称是否存在
      */
     public function ckeck_store_name() {
-        $condition = array();
-        $condition[]=array('store_name','=',input('param.store_name'));
-        $condition[]=array('store_id','<>',input('param.store_id'));
-        $store_info = model('store')->getStoreInfo($condition);
+        $store_name = trim(input('get.store_name'));
+        if (empty($store_name)) {
+            echo 'false';
+            exit;
+        }
+        $where = array();
+        $where[]=array('store_name','=',$store_name);
+        $store_id = input('get.store_id');
+        if (isset($store_id)) {
+            $where[]=array('store_id','<>', $store_id);
+        }
+        $store_info = model('store')->getStoreInfo($where);
         if (!empty($store_info['store_name'])) {
             echo 'false';
         } else {

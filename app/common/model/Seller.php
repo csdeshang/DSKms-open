@@ -55,7 +55,6 @@ class  Seller extends BaseModel {
         session('seller_is_admin', intval($seller_info['is_admin']));
         session('store_id', intval($seller_info['store_id']));
         session('store_name', $store_info['store_name']);
-        session('is_platform_store', (bool) $store_info['is_platform_store']);
         session('bind_all_gc', (bool) $store_info['bind_all_gc']);
         session('seller_limits', isset($seller_group_info['sellergroup_limits']) ? explode(',', $seller_group_info['sellergroup_limits']) : '');
         if ($seller_info['is_admin']) {
@@ -144,6 +143,32 @@ class  Seller extends BaseModel {
      */
     public function delSeller($condition) {
         return Db::name('seller')->where($condition)->delete();
+    }
+    
+/**
+     * 登录生成token
+     */
+    public function getSellerToken($seller_id, $seller_name) {
+
+        //生成新的token
+        $platformtoken_data = array();
+        $token = md5($seller_name . strval(TIMESTAMP) . strval(rand(0, 999999)));
+        $platformtoken_data['platform_userid'] = $seller_id;
+        $platformtoken_data['platform_username'] = $seller_name;
+        $platformtoken_data['platform_token'] = $token;
+        $platformtoken_data['platform_type'] = 'seller';
+        $platformtoken_data['platform_logintime'] = TIMESTAMP;
+        $platformtoken_data['platform_operationtime'] = TIMESTAMP;
+        $platformtoken_data['platform_clienttype'] = get_clienttype();
+        $platformtoken_data['platform_devicetype'] = getOSFromUserAgent();
+
+        $result = model('platformtoken')->addPlatformtoken($platformtoken_data);
+
+        if ($result) {
+            return $token;
+        } else {
+            return null;
+        }
     }
 
 }

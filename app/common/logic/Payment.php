@@ -118,7 +118,7 @@ class  Payment
      */
     public function getPaymentInfo($payment_code)
     {
-        if (in_array($payment_code, array('offline', 'predeposit')) || empty($payment_code)) {
+        if (in_array($payment_code, array('predeposit')) || empty($payment_code)) {
             return ds_callback(false, '系统不支持选定的支付方式');
         }
         $payment_model = model('payment');
@@ -178,11 +178,12 @@ class  Payment
         $update['pdr_trade_sn'] = $trade_no;
 
         $predeposit_model = model('predeposit');
+        
+        Db::startTrans();
         try {
-            Db::startTrans();
             $pdnum = $predeposit_model->getPdRechargeCount(array(
-                                                       'pdr_sn' => $recharge_info['pdr_sn'], 'pdr_payment_state' => 1
-                                                   ));
+                'pdr_sn' => $recharge_info['pdr_sn'], 'pdr_payment_state' => 1
+            ));
             if (intval($pdnum) > 0) {
                 throw new \think\Exception('订单已经处理', 10006);
             }
@@ -200,7 +201,6 @@ class  Payment
             $predeposit_model->changePd('recharge', $data);
             Db::commit();
             return ds_callback(true);
-
         } catch (\Exception $e) {
             Db::rollback();
             return ds_callback(false, $e->getMessage());

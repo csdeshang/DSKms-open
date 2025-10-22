@@ -8,6 +8,7 @@
     <li onclick="insert_video('{$v.videoupload_id}', '{$v.videoupload_url}');" style="height: 240px;width:240px;position:relative" title="{$v.videoupload_name}">
         {if $v.videoupload_state!=1}<div class='verify-message'>{$Think.lang.videoupload_state_verify}</div>{/if}
         <a href="JavaScript:void(0);"><video height="240" width="240" src="{$v.videoupload_url}"/></a>
+        <div>{$v.videoupload_name}</div>
     </li>
     {/foreach}
   </ul>

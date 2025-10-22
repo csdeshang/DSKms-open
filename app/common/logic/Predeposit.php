@@ -97,14 +97,12 @@ class Predeposit {
             $condition[] = array('pdc_id', '=', $info['pdc_id']);
 
             $result = $predeposit_model->editPdcash($update, $condition);
-            
-            return ds_callback(true, '系统自动支付成功');
-
             Db::commit();
+            return ds_callback(true, '系统自动支付成功');
+            
         } catch (\Exception $e) {
-
-            return ds_callback(false, $e->getMessage());
             Db::rollback();
+            return ds_callback(false, $e->getMessage());
         }
     }
 }

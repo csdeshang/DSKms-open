@@ -97,6 +97,15 @@ class  Member extends BaseModel
      */
     public function editMember($condition, $data ,$member_id=0)
     {
+        $member_validate = ds_validate('member');
+        if (!$member_validate->scene('model_edit')->check($data)) {
+            throw new \think\Exception($member_validate->getError());
+        }
+        
+        //如果修改密码,则清除用户下的token,以及用户关联卖家下的token
+        if(isset($data['member_password']) && !empty($data['member_password']) && $member_id>0){
+            model('platformtoken')->clearMembertoken($member_id);
+        }
         $update = Db::name('member')->where($condition)->update($data);
         if ($update && $member_id) {
             dcache($member_id, 'member');
@@ -110,10 +119,10 @@ class  Member extends BaseModel
      * @access public
      * @author csdeshang
      * @param type $member_info 会员信息
-     * @param type $reg 规则
+     * @param type $type 类型  login register
      * @return type
      */
-    public function createSession($member_info = array(), $reg = false)
+    public function createSession($member_info = array(), $type = '')
     {
         if (empty($member_info) || !is_array($member_info)) {
             return;
@@ -142,26 +151,20 @@ class  Member extends BaseModel
         }
 
         if (trim($member_info['member_qqopenid'])) {
-            session('openid', $member_info['member_qqopenid']);
+            session('qq_openid', $member_info['member_qqopenid']);
         }
         if (trim($member_info['member_sinaopenid'])) {
             session('slast_key.uid', $member_info['member_sinaopenid']);
         }
-        if (trim($member_info['member_wxopenid'])) {
-            session('wxopenid', $member_info['member_wxopenid']);
-        }
-        if (trim($member_info['member_wxunionid'])) {
-            session('wxunionid', $member_info['member_wxunionid']);
-        }
 
-        if (!$reg) {
+        if ($type == 'login') {
             //添加会员积分
             $this->addPoint($member_info);
             //添加会员经验值
             $this->addExppoint($member_info);
         }
 
-        if (!empty($member_info['member_logintime'])) {
+        if (!empty($member_info['member_logintime']) && $type == 'login') {
             $update_info = array(
                 'member_loginnum' => ($member_info['member_loginnum'] + 1),
                 'member_logintime' => TIMESTAMP,
@@ -225,14 +228,6 @@ class  Member extends BaseModel
      */
     public function register($register_info)
     {
-        // 验证用户名是否重复
-        $check_member_name = $this->getMemberInfo(array('member_name' => $register_info['member_name']));
-        if (is_array($check_member_name) and count($check_member_name) > 0) {
-            return array('error' => '用户名已存在');
-        }
-
-
-
         $insert_id = $this->addMember($register_info);
         if ($insert_id) {
             $this->addMemberAfter($insert_id,$register_info);
@@ -283,13 +278,16 @@ class  Member extends BaseModel
      * @param  array $data 会员信息
      * @return array 数组格式的返回结果
      */
-    public function addMember($data)
-    {
-        if (empty($data)) {
+    public function addMember($data) {
+        $member_validate = ds_validate('member');
+        if (!$member_validate->scene('model_add')->check($data)) {
             return false;
+//            throw new \think\Exception($member_validate->getError());
         }
+
+        Db::startTrans();
         try {
-            Db::startTrans();
+
             $member_info = array();
             $member_info['member_name'] = $data['member_name'];
             $member_info['member_password'] = md5(trim($data['member_password']));
@@ -301,9 +299,14 @@ class  Member extends BaseModel
             $member_info['member_old_logintime'] = TIMESTAMP;
             $member_info['member_login_ip'] = request()->ip();
             $member_info['member_old_login_ip'] = $member_info['member_login_ip'];
-            $member_info['member_paypwd'] = md5('123456');//注册会员默认支付密码为123456
+            $member_info['member_paypwd'] = md5('123456'); //注册会员默认支付密码为123456
             if (isset($data['member_truename'])) {
                 $member_info['member_truename'] = $data['member_truename'];
+            }
+            if (isset($data['member_nickname'])) {
+                $member_info['member_nickname'] = $data['member_nickname'];
+            } else {
+                $member_info['member_nickname'] = get_rand_nickname();
             }
             if (isset($data['member_qq'])) {
                 $member_info['member_qq'] = $data['member_qq'];
@@ -327,7 +330,7 @@ class  Member extends BaseModel
                 $member_info['member_sinainfo'] = $data['member_sinainfo'];
             }
             //添加邀请人(推荐人)会员积分
-            if (isset($data['inviter_id']) && intval($data['inviter_id'])>0) {
+            if (isset($data['inviter_id']) && intval($data['inviter_id']) > 0) {
                 $member_info['inviter_id'] = intval($data['inviter_id']);
             }
 
@@ -338,13 +341,24 @@ class  Member extends BaseModel
             }
             if (isset($data['member_wxunionid'])) {
                 $member_info['member_wxunionid'] = $data['member_wxunionid'];
-                $member_info['member_wxinfo'] = $data['member_wxinfo'];
-                $member_info['member_wxopenid'] = $data['member_wxopenid'];
+                if (isset($data['member_pc_wxopenid'])) {
+                    $member_info['member_pc_wxopenid'] = $data['member_pc_wxopenid'];
+                }
+                if (isset($data['member_h5_wxopenid'])) {
+                    $member_info['member_h5_wxopenid'] = $data['member_h5_wxopenid'];
+                }
+                if (isset($data['member_mini_wxopenid'])) {
+                    $member_info['member_mini_wxopenid'] = $data['member_mini_wxopenid'];
+                }
+                if (isset($data['member_app_wxopenid'])) {
+                    $member_info['member_app_wxopenid'] = $data['member_app_wxopenid'];
+                }
+                $member_info['member_wxnickname'] = $member_info['member_nickname'];
             }
             $insert_id = Db::name('member')->insertGetId($member_info);
             if (!$insert_id) {
                 throw new \think\Exception('', 10006);
-            } else{
+            } else {
                 //是否有注册红包
                 $member_info['member_id'] = $insert_id;
                 $bonus_model = model('bonus');
@@ -355,12 +369,12 @@ class  Member extends BaseModel
                     if (!empty($bonusreceive)) {
                         $res = $bonus_model->receiveBonus($member_info, $bonus, $bonusreceive, '领取注册红包');
                         if (!$res['code']) {
-                            return array('error' => $res['msg']);
+                            throw new \think\Exception($res['msg'], 10006);
                         }
                     }
                 }
             }
-        
+
             // 添加默认相册
             $insert = array();
             $insert['ac_name'] = '买家秀';
@@ -375,11 +389,11 @@ class  Member extends BaseModel
             if (config('ds_config.points_isuse')) {
                 model('points')->savePointslog('regist', array(
                     'pl_memberid' => $insert_id, 'pl_membername' => $data['member_name']
-                ), false);
+                        ), false);
             }
             Db::commit();
             return $insert_id;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Db::rollback();
             return false;
         }
@@ -579,35 +593,60 @@ class  Member extends BaseModel
      * @author csdeshang
      * @param type $member_id 会员id
      * @param type $member_name 会员名字
-     * @param type $client 客户端
      * @return type
      */
-    public function getBuyerToken($member_id, $member_name, $client,$openid='') {
-        $mbusertoken_model = model('mbusertoken');
-        //重新登录后以前的令牌失效
-        $condition = array();
-        $condition[] = array('member_id','=',$member_id);
-        $condition[] = array('member_clienttype','=',$client);
-        $mbusertoken_model->delMbusertoken($condition);
+    public function getBuyerToken($member_id, $member_name,$openid='') {
         
         //生成新的token
-        $mb_user_token_info = array();
+        $platformtoken_data = array();
         $token = md5($member_name . strval(TIMESTAMP) . strval(rand(0, 999999)));
-        $mb_user_token_info['member_id'] = $member_id;
-        $mb_user_token_info['member_name'] = $member_name;
-        $mb_user_token_info['member_token'] = $token;
-        $mb_user_token_info['member_logintime'] = TIMESTAMP;
-        $mb_user_token_info['member_clienttype'] = $client;
+        $platformtoken_data['platform_userid'] = $member_id;
+        $platformtoken_data['platform_username'] = $member_name;
+        $platformtoken_data['platform_token'] = $token;
+        $platformtoken_data['platform_type'] = 'member';
+        $platformtoken_data['platform_logintime'] = TIMESTAMP;
+        $platformtoken_data['platform_operationtime'] = TIMESTAMP;
+        $platformtoken_data['platform_clienttype'] = get_clienttype();
+        $platformtoken_data['platform_devicetype'] = getOSFromUserAgent();
         if(!empty($openid)){
-            $mb_user_token_info['member_openid'] = $openid;
+            $platformtoken_data['platform_openid'] = $openid;
         }
 
-        $result = $mbusertoken_model->addMbusertoken($mb_user_token_info);
+        $result = model('platformtoken')->addPlatformtoken($platformtoken_data);
         if ($result) {
             return $token;
         } else {
             return null;
         }
+    }
+    
+    
+     /**
+     * 获取可以注册的随机用户名
+     */
+    public function getRandMembername($prefix=''){
+        for($i=1;$i<=30;$i++){
+            $member_name = $prefix.get_rand_str(10);
+            $condition = array();
+            $condition['member_name'] = $member_name;
+            $member_info = Db::name('member')->where($condition)->find();
+            if($member_info){
+                //用户名存在继续
+                continue;
+            }
+            $storejoinin_info = Db::name('storejoinin')->where(array('member_name' => $member_name))->find();
+            if($storejoinin_info){
+                //用户名存在继续
+                continue;
+            }
+            $store_info = Db::name('store')->where(array('member_name' => $member_name))->find();
+            if($store_info){
+                //用户名存在继续
+                continue;
+            }
+            return $member_name;
+        }
+        exit('getRandMembername获取错误');
     }
 
 }

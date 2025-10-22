@@ -33,7 +33,7 @@ class  Seller extends BaseSeller {
         if (intval($store_info['store_endtime']) > 0) {
             $store_info['store_endtime_text'] = date('Y-m-d', $store_info['store_endtime']);
             $reopen_time = $store_info['store_endtime'] - 3600 * 24 + 1 - TIMESTAMP;
-            if (!session('is_platform_store') && $store_info['store_endtime'] - TIMESTAMP >= 0 && $reopen_time < 2592000) {
+            if ($store_info['store_endtime'] - TIMESTAMP >= 0 && $reopen_time < 2592000) {
                 //到期续签提醒(<30天)
                 $store_info['reopen_tip'] = true;
             }
@@ -55,14 +55,11 @@ class  Seller extends BaseSeller {
 
 
         
-        if (!session('is_platform_store')) {
             if (config('ds_config.voucher_allow') == 1) {
                 $voucherquota_info = model('voucher')->getVoucherquotaCurrent(session('store_id'));
                 View::assign('voucherquota_info', $voucherquota_info);
             }
-        } else {
-            View::assign('isPlatformStore', true);
-        }
+            
         $phone_array = explode(',', config('ds_config.site_phone'));
         View::assign('phone_array', $phone_array);
 
@@ -114,12 +111,6 @@ class  Seller extends BaseSeller {
         // 商品图片数量
         $imagecount = model('album')->getAlbumpicCount(array('store_id' => session('store_id')));
 
-        //待确认的结算账单
-        $bill_model = model('bill');
-        $condition = array();
-        $condition[] = array('ob_store_id','=',session('store_id'));
-        $condition[] = array('ob_state','=',BILL_STATE_CREATE);
-        $bill_confirm_count = $bill_model->getOrderbillCount($condition);
 
         //统计数组
         $statistics = array(
@@ -131,7 +122,6 @@ class  Seller extends BaseSeller {
             'lockup' => $goods_lockup,
             'imagecount' => $imagecount,
             'consult' => $consult,
-            'bill_confirm' => $bill_confirm_count
         );
         exit(json_encode($statistics));
     }

@@ -113,7 +113,6 @@ class Sellerjoinin extends BaseMember {
     public function step1() {
         View::assign('step', '1');
         View::assign('sub_step', 'step1');
-        View::assign('baidu_ak', config('ds_config.baidu_ak'));
         echo View::fetch($this->template_dir . 'step1');
         exit;
     }

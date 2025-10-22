@@ -45,14 +45,13 @@ class  Login extends BaseMall {
             if (config('ds_config.captcha_status_login') == 1 && !captcha_check(input('post.captcha_normal'))) {
                 ds_json_encode(10001,lang('image_verification_code_error'));
             }
+            if (empty(input('post.member_name')) || empty(input('post.member_password'))) {
+                ds_json_encode(10001, lang('param_error'));
+            }
             $data = array(
                 'member_name' => input('post.member_name'),
                 'member_password' => input('post.member_password'),
             );
-            $login_validate = ds_validate('member');
-            if (!$login_validate->scene('login')->check($data)) {
-                ds_json_encode(10001,$login_validate->getError());
-            }
             $map = array(
                 'member_name' => $data['member_name'],
                 'member_password' => md5($data['member_password']),
@@ -78,7 +77,7 @@ class  Login extends BaseMall {
                     ds_json_encode(10001, lang('login_index_account_stop'));
                 }
                 //执行登录,赋值操作
-                $member_model->createSession($member_info);
+                $member_model->createSession($member_info,'login');
                 //是否有卖家账户
                 $seller_model = model('seller');
                 $seller_info = $seller_model->getSellerInfo(array('member_id' => $member_info['member_id']));
@@ -170,10 +169,6 @@ class  Login extends BaseMall {
                     $member_info = $state_data['info'];
                 }
             }else if(config('ds_config.member_normal_register')==1){
-                $login_validate = ds_validate('member');
-                if (!$login_validate->scene('register')->check($data)) {
-                    ds_json_encode(10001,$login_validate->getError());
-                }
                 $member_info = $member_model->register($data);
             }else{
                 ds_json_encode(10001,lang('login_register_cancel'));
@@ -181,7 +176,7 @@ class  Login extends BaseMall {
 
             
             if (!isset($member_info['error'])) {
-                $member_model->createSession($member_info, true);
+                $member_model->createSession($member_info, 'register');
                 ds_json_encode(10000,lang('login_usersave_regist_success'), '','',false);
             } else {
                 ds_json_encode(10001,$member_info['error']);

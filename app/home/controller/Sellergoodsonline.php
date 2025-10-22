@@ -192,33 +192,31 @@ class  Sellergoodsonline extends BaseSeller {
         }
 
         // 三方机构验证是否绑定了该分类
-        if (!check_platform_store()) {
-            //商品分类 提供批量显示所有分类插件
-            $storebindclass_model = model('storebindclass');
-            $goods_class = model('goodsclass')->getGoodsclassForCacheModel();
-            $condition = array();
-            $condition[] = array('store_id', '=', session('store_id'));
-            $class_2 = isset($goods_class[$gc_id]['gc_parent_id'])?$goods_class[$gc_id]['gc_parent_id']:0;
-            $class_1 = isset($goods_class[$class_2]['gc_parent_id'])?$goods_class[$class_2]['gc_parent_id']:0;
-            $condition_class_1 = array(array('class_1', '=', ($class_1 > 0) ? $class_1 : (($class_2 > 0) ? $class_2 : $gc_id)));
-            $condition_class_2 = array(array('class_2', '=', ($class_1 > 0) ? $class_2 : (($class_2 > 0) ? $gc_id : 0)));
-            $condition_class_3 = array(array('class_3', '=', ($class_1 > 0 && $class_2 > 0) ? $gc_id : 0));
-            $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition,$condition_class_1,$condition_class_2,$condition_class_3));
+        //商品分类 提供批量显示所有分类插件
+        $storebindclass_model = model('storebindclass');
+        $goods_class = model('goodsclass')->getGoodsclassForCacheModel();
+        $condition = array();
+        $condition[] = array('store_id', '=', session('store_id'));
+        $class_2 = isset($goods_class[$gc_id]['gc_parent_id']) ? $goods_class[$gc_id]['gc_parent_id'] : 0;
+        $class_1 = isset($goods_class[$class_2]['gc_parent_id']) ? $goods_class[$class_2]['gc_parent_id'] : 0;
+        $condition_class_1 = array(array('class_1', '=', ($class_1 > 0) ? $class_1 : (($class_2 > 0) ? $class_2 : $gc_id)));
+        $condition_class_2 = array(array('class_2', '=', ($class_1 > 0) ? $class_2 : (($class_2 > 0) ? $gc_id : 0)));
+        $condition_class_3 = array(array('class_3', '=', ($class_1 > 0 && $class_2 > 0) ? $gc_id : 0));
+        $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition, $condition_class_1, $condition_class_2, $condition_class_3));
+        if (empty($bind_info)) {
+            $condition_class_3 = array(array('class_3', '=', 0));
+            $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition, $condition_class_1, $condition_class_2, $condition_class_3));
             if (empty($bind_info)) {
-                $condition_class_3 = array(array('class_3', '=',0));
-                $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition,$condition_class_1,$condition_class_2,$condition_class_3));
+                $condition_class_2 = array(array('class_2', '=', 0));
+                $condition_class_3 = array(array('class_3', '=', 0));
+                $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition, $condition_class_1, $condition_class_2, $condition_class_3));
                 if (empty($bind_info)) {
+                    $condition_class_1 = array(array('class_1', '=', 0));
                     $condition_class_2 = array(array('class_2', '=', 0));
                     $condition_class_3 = array(array('class_3', '=', 0));
-                    $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition,$condition_class_1,$condition_class_2,$condition_class_3));
+                    $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition, $condition_class_1, $condition_class_2, $condition_class_3));
                     if (empty($bind_info)) {
-                        $condition_class_1 = array(array('class_1', '=', 0));
-                        $condition_class_2 = array(array('class_2', '=', 0));
-                        $condition_class_3 = array(array('class_3', '=', 0));
-                        $bind_info = $storebindclass_model->getStorebindclassInfo(array_merge($condition,$condition_class_1,$condition_class_2,$condition_class_3));
-                        if (empty($bind_info)) {
-                            ds_json_encode(10001, lang('store_goods_index_again_choose_category2'));
-                        }
+                        ds_json_encode(10001, lang('store_goods_index_again_choose_category2'));
                     }
                 }
             }
@@ -239,10 +237,10 @@ class  Sellergoodsonline extends BaseSeller {
         $update_common['goods_bg_image'] = input('post.bg_image_path');
         $update_common['goods_price'] = floatval(input('post.g_price'));
         $update_common['goods_serial'] = input('post.g_serial');
-        $goods_body=preg_replace_callback("/<\s*img\s+[^>]*?src\s*=\s*(\'|\")(.*?)\\1[^>]*?\/?\s*>/i", function ($matches) {
-                return str_replace($matches[2],strip_tags($matches[2]),$matches[0]);
-            }, htmlspecialchars_decode(input('post.goods_body')));
-            $update_common['goods_body'] = $goods_body;
+        $goods_body = preg_replace_callback("/<\s*img\s+[^>]*?src\s*=\s*(\'|\")(.*?)\\1[^>]*?\/?\s*>/i", function ($matches) {
+            return str_replace($matches[2], strip_tags($matches[2]), $matches[0]);
+        }, htmlspecialchars_decode(input('post.goods_body')));
+        $update_common['goods_body'] = $goods_body;
         // 序列化保存手机端商品描述数据
         $mobile_body = input('post.m_body');
         if ($mobile_body != '') {
@@ -276,9 +274,9 @@ class  Sellergoodsonline extends BaseSeller {
             }
             $sgcate_id_arr = array_unique($sgcate_id_arr);
             $condition = array();
-            $condition[] = array('store_id','=',session('store_id'));
-            $condition[] = array('storegc_id','in',$sgcate_id_arr);
-            $condition[] = array('storegc_state','=',1);
+            $condition[] = array('store_id', '=', session('store_id'));
+            $condition[] = array('storegc_id', 'in', $sgcate_id_arr);
+            $condition[] = array('storegc_state', '=', 1);
             $store_goods_class = model('storegoodsclass')->getStoregoodsclassList($condition);
             if (!empty($store_goods_class)) {
                 foreach ($store_goods_class as $k => $v) {
@@ -300,30 +298,27 @@ class  Sellergoodsonline extends BaseSeller {
         }
         $update_common['plateid_top'] = intval(input('post.plate_top')) > 0 ? intval(input('post.plate_top')) : '';
         $update_common['plateid_bottom'] = intval(input('post.plate_bottom')) > 0 ? intval(input('post.plate_bottom')) : '';
-        $update_common['is_platform_store'] = in_array(session('store_id'), model('store')->getOwnShopIds()) ? 1 : 0;
 
         // 开始事务
         Db::startTrans();
-        try{
-
-
-        // 商品加入上架队列
-        if (!empty(input('post.starttime'))) {
-            $selltime = strtotime(input('post.starttime')) + intval(input('post.starttime_H')) * 3600 + intval(input('post.starttime_i')) * 60;
-            if ($selltime > TIMESTAMP) {
-                $this->addcron(array('cron_exetime' => $selltime, 'cron_value' => serialize(intval($goods_id)), 'cron_type' => 'editProducesOnline'), true);
+        try {
+            // 商品加入上架队列
+            if (!empty(input('post.starttime'))) {
+                $selltime = strtotime(input('post.starttime')) + intval(input('post.starttime_H')) * 3600 + intval(input('post.starttime_i')) * 60;
+                if ($selltime > TIMESTAMP) {
+                    $this->addcron(array('cron_exetime' => $selltime, 'cron_value' => serialize(intval($goods_id)), 'cron_type' => 'editProducesOnline'), true);
+                }
             }
-        }
-        // 添加操作日志
-        $this->recordSellerlog('编辑商品，平台货号：' . $goods_id);
+            // 添加操作日志
+            $this->recordSellerlog('编辑商品，平台货号：' . $goods_id);
 
-        $return = $goods_model->editGoods($update_common, array('goods_id' => $goods_id, 'store_id' => session('store_id')));
-        } catch (\Exception $e){
+            $return = $goods_model->editGoods($update_common, array('goods_id' => $goods_id, 'store_id' => session('store_id')));
+            Db::commit();
+        } catch (\Exception $e) {
             Db::rollback();
-            ds_json_encode(10001,$e->getMessage());
+            ds_json_encode(10001, $e->getMessage());
         }
-        //提交事务
-        Db::commit();
+        
         ds_json_encode(10000, lang('ds_common_op_succ'));
     }
 

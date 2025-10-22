@@ -634,9 +634,6 @@ INSERT INTO `#__goodscourses` (`goodscourses_id`, `goods_id`, `store_id`, `goods
 (277, 63, 1, 1, 'MBA全年备考指南', 1, 255),
 (278, 64, 1, 1, '2020考研政治高分导学班', 1, 255);
 
-INSERT INTO `#__videoupload` (`videoupload_id`,`videoupload_fileid`,`videoupload_url`,`videoupload_name`,`videoupload_state`,`videoupload_size`,`videoupload_type`,`videoupload_time`,`store_id`,`store_name`,`item_id`,`video_type`) VALUES
-(1, '5285890789142474642', 'http://player.dskms.csdeshang.com/9d09cc46vodcq1253451915/28cd51945285890789142474642/3fKcxZiD3p0A.mp4', 'Gu1dWK4NwjEA.mp4', 1, 11356078, 0, 1550465208, 1,'官方自营机构',0,'tencent');
-
 
 INSERT INTO `#__albumpic` (`apic_id`, `apic_name`, `apic_tag`, `aclass_id`, `apic_cover`, `apic_size`, `apic_spec`, `store_id`, `apic_uploadtime`) VALUES
 (1, '1_2019021812464813422.jpg', '', 1, '1_2019021812464813422.jpg', 234469, '1080x608', 1, 1550465208),
@@ -709,7 +706,6 @@ INSERT INTO `#__navigation` VALUES (1, 0, '使用手册', 'http://www.csdeshang.
 INSERT INTO `#__navigation` VALUES (2, 0, '官方网站', 'http://www.csdeshang.com/', 'middle', 1, 15, 0, 0);
 INSERT INTO `#__navigation` VALUES (3, 0, '官方论坛', 'http://bbs.csdeshang.com', 'middle', 1, 0, 0, 0);
 INSERT INTO `#__navigation` VALUES (4, 0, '机构', 'https://demo.dskms.com/home/storelist', 'middle', 1, 23, 0, 0);
-INSERT INTO `#__navigation` VALUES (5, 0, '附近机构', 'https://demo.dskms.com/home/Shopnearby', 'middle', 1, 24, 0, 0);
 INSERT INTO `#__navigation` VALUES (6, 0, '积分中心', 'https://demo.dskms.com/home/pointshop', 'middle', 1, 24, 0, 0);
 INSERT INTO `#__navigation` VALUES (7, 0, '关于我们', 'http://www.csdeshang.com/', 'footer', 1, 255, 0, 0);
 INSERT INTO `#__navigation` VALUES (8, 0, '联系我们', 'http://www.csdeshang.com/', 'footer', 1, 255, 0, 0);

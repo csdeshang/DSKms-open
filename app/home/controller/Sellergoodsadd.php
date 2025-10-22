@@ -81,8 +81,6 @@ class  Sellergoodsadd extends BaseSeller
             $this->error(lang('store_goods_index_again_choose_category1'));
         }
 
-        // 如果不是自营机构或者自营机构未绑定全部商品类目，读取绑定分类
-        if (!check_platform_store_bindingall_goodsclass()) {
             //商品分类  支持批量显示分类
             $storebindclass_model = model('storebindclass');
             $goods_class = model('goodsclass')->getGoodsclassForCacheModel();
@@ -112,7 +110,6 @@ class  Sellergoodsadd extends BaseSeller
                     }
                 }
             }
-        }
 
         // 更新常用分类信息
         $goods_class = $goodsclass_model->getGoodsclassLineForTag($gc_id);
@@ -139,119 +136,112 @@ class  Sellergoodsadd extends BaseSeller
     /**
      * 保存商品（商品发布第二步使用）
      */
-    public function save_goods()
-    {
+    public function save_goods() {
         if (request()->isPost()) {
             $goods_model = model('goods');
             Db::startTrans();
-            try{
-            // 分类信息
-            $goods_class = model('goodsclass')->getGoodsclassLineForTag(intval(input('post.cate_id')));
+            try {
+                // 分类信息
+                $goods_class = model('goodsclass')->getGoodsclassLineForTag(intval(input('post.cate_id')));
 
-            $common_array = array();
-            $common_array['goods_name'] = input('post.g_name');
-            $common_array['goods_advword'] = input('post.g_jingle');
-            $common_array['gc_id'] = intval(input('post.cate_id'));
-            $common_array['gc_id_1'] = intval($goods_class['gc_id_1']);
-            $common_array['gc_id_2'] = intval($goods_class['gc_id_2']);
-            $common_array['gc_id_3'] = intval($goods_class['gc_id_3']);
-            $common_array['gc_name'] = input('post.cate_name');
-            $common_array['goods_image'] = input('post.image_path');
-            $common_array['goods_bg_image'] = input('post.bg_image_path');
-            $common_array['goods_price'] = floatval(input('post.g_price'));
-            $common_array['goods_serial'] = input('post.g_serial');
-            $goods_body=preg_replace_callback("/<\s*img\s+[^>]*?src\s*=\s*(\'|\")(.*?)\\1[^>]*?\/?\s*>/i", function ($matches) {
-                return str_replace($matches[2],strip_tags($matches[2]),$matches[0]);
-            }, htmlspecialchars_decode(input('post.goods_body')));
-            $common_array['goods_body'] = $goods_body;
+                $common_array = array();
+                $common_array['goods_name'] = input('post.g_name');
+                $common_array['goods_advword'] = input('post.g_jingle');
+                $common_array['gc_id'] = intval(input('post.cate_id'));
+                $common_array['gc_id_1'] = intval($goods_class['gc_id_1']);
+                $common_array['gc_id_2'] = intval($goods_class['gc_id_2']);
+                $common_array['gc_id_3'] = intval($goods_class['gc_id_3']);
+                $common_array['gc_name'] = input('post.cate_name');
+                $common_array['goods_image'] = input('post.image_path');
+                $common_array['goods_bg_image'] = input('post.bg_image_path');
+                $common_array['goods_price'] = floatval(input('post.g_price'));
+                $common_array['goods_serial'] = input('post.g_serial');
+                $goods_body = preg_replace_callback("/<\s*img\s+[^>]*?src\s*=\s*(\'|\")(.*?)\\1[^>]*?\/?\s*>/i", function ($matches) {
+                    return str_replace($matches[2], strip_tags($matches[2]), $matches[0]);
+                }, htmlspecialchars_decode(input('post.goods_body')));
+                $common_array['goods_body'] = $goods_body;
 
-            // 序列化保存手机端商品描述数据
-            $mobile_body = input('post.m_body');
-            if ($mobile_body != '') {
-                $mobile_body = str_replace('&quot;', '"', $mobile_body);
-                $mobile_body = json_decode($mobile_body, true);
-                if (!empty($mobile_body)) {
-                    $mobile_body = serialize($mobile_body);
-                }
-                else {
-                    $mobile_body = '';
-                }
-            }
-            $common_array['mobile_body'] = $mobile_body;
-            $common_array['goods_commend'] = intval(input('post.g_commend'));
-            $common_array['goods_state'] = ($this->store_info['store_state'] != 1) ? 0 : intval(input('post.g_state')); // 机构关闭时，商品下架
-            $common_array['goods_addtime'] = TIMESTAMP;
-            $common_array['goods_edittime'] = TIMESTAMP;
-            $common_array['goods_verify'] = (config('ds_config.goods_verify') == 1) ? 10 : 1;
-            $common_array['store_id'] = session('store_id');
-            $common_array['store_name'] = session('store_name');
-            $common_array['goods_vat'] = intval(input('post.g_vat'));
-
-            $goods_validate = ds_validate('sellergoodsadd');
-            if (!$goods_validate->scene('save_goods')->check($common_array)) {
-                throw new \think\Exception($goods_validate->getError(), 10006);
-            }
-
-            //查询机构商品分类
-            $goods_stcids_arr = array();
-            
-            $sgcate_id_array = input('post.sgcate_id/a');#获取数组
-            
-            if (!empty($sgcate_id_array)) {
-                $sgcate_id_arr = array();
-                foreach ($sgcate_id_array as $k => $v) {
-                    $sgcate_id_arr[] = intval($v);
-                }
-                $sgcate_id_arr = array_unique($sgcate_id_arr);
-                $condition = array();
-                $condition[] = array('store_id','=',session('store_id'));
-                $condition[] = array('storegc_id','in',$sgcate_id_arr);
-                $condition[] = array('storegc_state','=',1);
-                $store_goods_class = model('storegoodsclass')->getStoregoodsclassList($condition);
-                if (!empty($store_goods_class)) {
-                    foreach ($store_goods_class as $k => $v) {
-                        if ($v['storegc_id'] > 0) {
-                            $goods_stcids_arr[] = $v['storegc_id'];
-                        }
-                        if ($v['storegc_parent_id'] > 0) {
-                            $goods_stcids_arr[] = $v['storegc_parent_id'];
-                        }
+                // 序列化保存手机端商品描述数据
+                $mobile_body = input('post.m_body');
+                if ($mobile_body != '') {
+                    $mobile_body = str_replace('&quot;', '"', $mobile_body);
+                    $mobile_body = json_decode($mobile_body, true);
+                    if (!empty($mobile_body)) {
+                        $mobile_body = serialize($mobile_body);
+                    } else {
+                        $mobile_body = '';
                     }
-                    $goods_stcids_arr = array_unique($goods_stcids_arr);
-                    sort($goods_stcids_arr);
                 }
-            }
-            if (empty($goods_stcids_arr)) {
-                $common_array['goods_stcids'] = '';
-            }
-            else {
-                $common_array['goods_stcids'] = ',' . implode(',', $goods_stcids_arr) . ','; // 首尾需要加,
-            }
+                $common_array['mobile_body'] = $mobile_body;
+                $common_array['goods_commend'] = intval(input('post.g_commend'));
+                $common_array['goods_state'] = ($this->store_info['store_state'] != 1) ? 0 : intval(input('post.g_state')); // 机构关闭时，商品下架
+                $common_array['goods_addtime'] = TIMESTAMP;
+                $common_array['goods_edittime'] = TIMESTAMP;
+                $common_array['goods_verify'] = (config('ds_config.goods_verify') == 1) ? 10 : 1;
+                $common_array['store_id'] = session('store_id');
+                $common_array['store_name'] = session('store_name');
+                $common_array['goods_vat'] = intval(input('post.g_vat'));
 
-            $common_array['plateid_top'] = intval(input('post.plate_top')) > 0 ? intval(input('post.plate_top')) : '';
-            $common_array['plateid_bottom'] = intval(input('post.plate_bottom')) > 0 ? intval(input('post.plate_bottom')) : '';
-            $common_array['is_platform_store'] = in_array(session('store_id'), model('store')->getOwnShopIds()) ? 1 : 0;
+                $goods_validate = ds_validate('sellergoodsadd');
+                if (!$goods_validate->scene('save_goods')->check($common_array)) {
+                    throw new \think\Exception($goods_validate->getError(), 10006);
+                }
 
-            // 保存数据
-            $goods_id = $goods_model->addGoods($common_array);
-            if ($goods_id) {
-                // 记录日志
-                $this->recordSellerlog('添加商品，平台货号:' . $goods_id);
-                
-            }
-            else {
-                throw new \think\Exception(lang('store_goods_index_goods_add_fail'), 10006);
-            }
-            } catch (\Exception $e){
+                //查询机构商品分类
+                $goods_stcids_arr = array();
+
+                $sgcate_id_array = input('post.sgcate_id/a'); #获取数组
+
+                if (!empty($sgcate_id_array)) {
+                    $sgcate_id_arr = array();
+                    foreach ($sgcate_id_array as $k => $v) {
+                        $sgcate_id_arr[] = intval($v);
+                    }
+                    $sgcate_id_arr = array_unique($sgcate_id_arr);
+                    $condition = array();
+                    $condition[] = array('store_id', '=', session('store_id'));
+                    $condition[] = array('storegc_id', 'in', $sgcate_id_arr);
+                    $condition[] = array('storegc_state', '=', 1);
+                    $store_goods_class = model('storegoodsclass')->getStoregoodsclassList($condition);
+                    if (!empty($store_goods_class)) {
+                        foreach ($store_goods_class as $k => $v) {
+                            if ($v['storegc_id'] > 0) {
+                                $goods_stcids_arr[] = $v['storegc_id'];
+                            }
+                            if ($v['storegc_parent_id'] > 0) {
+                                $goods_stcids_arr[] = $v['storegc_parent_id'];
+                            }
+                        }
+                        $goods_stcids_arr = array_unique($goods_stcids_arr);
+                        sort($goods_stcids_arr);
+                    }
+                }
+                if (empty($goods_stcids_arr)) {
+                    $common_array['goods_stcids'] = '';
+                } else {
+                    $common_array['goods_stcids'] = ',' . implode(',', $goods_stcids_arr) . ','; // 首尾需要加,
+                }
+
+                $common_array['plateid_top'] = intval(input('post.plate_top')) > 0 ? intval(input('post.plate_top')) : '';
+                $common_array['plateid_bottom'] = intval(input('post.plate_bottom')) > 0 ? intval(input('post.plate_bottom')) : '';
+
+                // 保存数据
+                $goods_id = $goods_model->addGoods($common_array);
+                if ($goods_id) {
+                    // 记录日志
+                    $this->recordSellerlog('添加商品，平台货号:' . $goods_id);
+                } else {
+                    throw new \think\Exception(lang('store_goods_index_goods_add_fail'), 10006);
+                }
+                Db::commit();
+            } catch (\Exception $e) {
                 Db::rollback();
                 $this->error($e->getMessage(), get_referer());
             }
-            Db::commit();
+            
             $this->redirect(url('Sellergoodsonline/list_courses', ['goods_id' => $goods_id]));
         }
     }
-
-
 
     /**
      * 上传图片

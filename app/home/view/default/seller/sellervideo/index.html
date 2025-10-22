@@ -13,7 +13,7 @@
         <p><i class="iconfont">&#xe733;</i>上传视频</p>
     </div>
 </a>
-  
+    
 </div>
 <p class="hint" style="text-align: right;margin-right: 20px">视频将上传到<span id='upload_type_text'>服务器</span>，请点击 <a href="javascript:setUploadType('cloud','服务器');">服务器</a>/<a href="javascript:setUploadType('link','外部链接');">外部链接</a> 切换</p>  
 <p class="hint" style="text-align: right;margin-right: 20px;margin-top:0">如果视频不能正常播放，请将视频转换为H264编码的MP4格式</p>
@@ -22,26 +22,24 @@
 
 
 {block name="seller_main"}
-<div id="pictureFolder" class="dssc-picture-folder">
+<div class="dssc-picture-folder">
     {notempty name="videoupload_list"}
     <form name="checkboxform" id="checkboxform" method="POST" action="">
-        <div class="dssc-picture-list">
-            <ul>
+        <div class="dssc-video-list">
                 {foreach name="videoupload_list" item="v" }
-                <li style="width:268px;height:268px">
-                    <dl style="width:240px;height:240px">
-                        <dt style="width:240px;height:240px">
-                            <div class="picture" style="width:240px;height:240px">
+                    <dl>
+                        <dt>
+                            <div class="picture">
                                 <video controls="" height="240" width="240" src="{$v.videoupload_url}"/>
                             </div>
                         </dt>
-                        <dd class="buttons" style="top:0;left:0">
-                            <a href="javascript:void(0)" onclick="ds_ajaxget_confirm('{:url('Sellervideo/del',['id'=>$v.videoupload_id,'return_json'=>1])}', '{$Think.lang.ds_common_op_confirm}');"><i class="iconfont">&#xe725;</i>{$Think.lang.store_video_delete}</a>
+                        <dd>{$v.videoupload_name}-{$v.video_type}</dd>
+                        <dd class="buttons">
+                            <a ds_type="dialog" dialog_title="修改视频名称" uri="{:url('Sellervideo/edit_videoupload_name',['videoupload_id'=>$v.videoupload_id])}">修改视频名称</a>
+                            <a href="javascript:void(0)" onclick="ds_ajaxget_confirm('{:url('Sellervideo/del',['id'=>$v.videoupload_id,'return_json'=>1])}', '{$Think.lang.ds_common_op_confirm}');">{$Think.lang.store_video_delete}</a>
                         </dd>
                     </dl>
-                </li>
                 {/foreach}
-            </ul>
         </div>
     </form>
     <div class="pagination">{$show_page|raw}</div>
@@ -130,7 +128,6 @@
                                             file_name:fileInfo.name,
                                             size:fileInfo.size,
                                             url: data.result.name,
-                                            type: "{$Request.param.type}",
                                             item_id: "{$Request.param.item_id}"
                                         })
                                     } else {
@@ -199,7 +196,6 @@
                   size:fileInfo.size,
                       file_id: doneResult.fileId,
                       url: doneResult.video.url,
-                      type: "{$Request.param.type}",
                       item_id: "{$Request.param.item_id}"
                   })
               }).catch(function (err) {
@@ -248,7 +244,6 @@
             save_video({
                     video_type: 'link',
                     url: url,
-                    type: "{$Request.param.type}",
                     item_id: "{$Request.param.item_id}"
                 })
         }
@@ -344,7 +339,6 @@
                 file_name:fileInfo.name,
                 size:fileInfo.size,
                 url: uploadInfo.object,
-                type: "{$Request.param.type}",
                 item_id: "{$Request.param.item_id}"
             })
         },
